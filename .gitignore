@@ -1,0 +1,4 @@
+node_modules/
+.svels/
+.env
+*.log
