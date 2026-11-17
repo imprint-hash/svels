@@ -1,0 +1,15 @@
+{
+  "name": "larder-shop",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Demo shop for Svels: a small store built quickly with an AI coding agent, with the usual leftovers.",
+  "scripts": { "start": "npx serve ." },
+  "dependencies": {
+    "lodash": "4.17.21",
+    "moment": "2.30.1",
+    "axios": "1.7.9",
+    "jquery": "3.7.1",
+    "uuid": "11.0.3",
+    "classnames": "2.5.1"
+  }
+}

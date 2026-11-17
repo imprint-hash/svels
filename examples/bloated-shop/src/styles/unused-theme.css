@@ -1,0 +1,5 @@
+/* A second visual theme the agent generated; never linked. */
+.carousel { position: relative; overflow: hidden; border-radius: 16px; } .slide { display: none; } .slide.on { display: block; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; }
+.modal { background: #fff; padding: 24px; border-radius: 12px; max-width: 480px; }
+.newsletter { display: flex; gap: 8px; } .cart-v2 .row { display: flex; gap: 8px; align-items: center; }

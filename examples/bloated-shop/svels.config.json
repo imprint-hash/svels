@@ -1,0 +1,7 @@
+{
+  "entries": ["index.html"],
+  "aliases": {},
+  "port": 5180,
+  "journeys": "svels/journeys",
+  "keep": ["svels/"]
+}
