@@ -43,7 +43,7 @@ Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was wri
 
 | Code | Looked unused | Cut (Kane-verified) | Kept: Kane caught a break | Guarded, not cut |
 |---|---|---|---|---|
-| **Aisle**, a live hackathon site (ours, built before Svels) | 3 | 1: `img/kite.svg`, an image the site stopped using | **1: `data/campaign.json`.** The page fetches it by URL; without it Kane saw the task dropdown lose "Lagos, Nigeria" | – |
+| **Aisle**, a live hackathon site (ours, built before Svels) | 3 (first scanner version; it now reads paths in JavaScript strings, so today it flags only 1) | 1: `img/kite.svg`, an image the site stopped using | **1: `data/campaign.json`.** The page fetches it by URL; without it Kane saw the task dropdown lose "Lagos, Nigeria" | – |
 | **Parasol**, a 90-file web app (ours, built before Svels) | 42 | 1: an unused icon | – | **41.** Kane passed with all 41 removed (a missing picture doesn't fail a text check), but the app builds paths into `demo/`, `products/`, `scenes/` at runtime, so Svels refused |
 | **[bradtraversy/50projects50days](https://github.com/bradtraversy/50projects50days)** (40k stars, 52 apps, 167 files) | **1** | 1: `event-keycodes/dark-style.css`, referenced nowhere. Kane pressed "a" and still saw key code 65 | – | – |
 | **[StartBootstrap Agency](https://github.com/StartBootstrap/startbootstrap-agency)** (built site, 25 files) | **0** | – | – | – |
