@@ -1,4 +1,5 @@
 export const money = (n) => "$" + n.toFixed(2);
+export const badgeText = (n) => `Cart (${n})`;
 
 // Added by the agent "in case we need them later".
 export const percent = (n, digits = 0) => (n * 100).toFixed(digits) + "%";

@@ -9,12 +9,10 @@ await applyTheme(localStorage.getItem("theme") || "light"); // colours must be s
 
 function route() {
   const hash = location.hash || "#/";
-  document.getElementById("cart-count").textContent = cart.count();
   if (hash.startsWith("#/product/")) return renderProduct(app, hash.split("/")[2]);
   if (hash === "#/cart") return renderCart(app);
   if (hash === "#/checkout") return renderCheckout(app);
   return renderProducts(app);
 }
 window.addEventListener("hashchange", route);
-cart.onChange(() => (document.getElementById("cart-count").textContent = cart.count()));
 route();
