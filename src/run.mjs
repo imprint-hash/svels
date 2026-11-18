@@ -115,7 +115,9 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     const removedFiles = accepted.filter((x) => x.startsWith("file:")).map((x) => x.slice(5));
     const summary = {
       project: path.basename(projectDir), at: new Date().toISOString(), seconds: Math.round((Date.now() - t0) / 1000),
-      candidates: candidates.length, removed: accepted, review: b.review, kept: needed.map((n) => ({ item: n.item, failures: n.evidence, ...n.explain })),
+      candidates: candidates.length, removed: accepted, review: b.review,
+      remembered: learned.filter((l) => candidates.includes(l.item)), kept: [...needed.map((n) => ({ item: n.item, failures: n.evidence, ...n.explain })),
+        ...learned.filter((l) => candidates.includes(l.item)).map((l) => ({ item: l.item, failures: [{ journey: "earlier run", failedStep: "Kane proved it needed on " + l.at.slice(0, 10) }], why: l.why, keep_rule: l.keep_rule, remembered: true }))],
       linesRemoved: removedFiles.reduce((s, f) => s + lineCount(path.join(projectDir, f)), 0),
       bytesRemoved: removedFiles.reduce((s, f) => s + byteSize(path.join(projectDir, f)), 0),
       packagesRemoved: accepted.filter((x) => x.startsWith("pkg:")).map((x) => x.slice(4)),

@@ -29,6 +29,18 @@ async function ask(messages) {
   return null;
 }
 
+function findUses(root, self, names) {
+  const out = [];
+  const walk = (dir) => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (["node_modules", ".git", ".svels"].includes(e.name) || e.name.startsWith("output-")) continue;
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walk(p);
+    else if (/\.(html?|m?js|jsx|tsx?|css)$/.test(e.name) && path.relative(root, p) !== self) {
+      fs.readFileSync(p, "utf8").split("\n").forEach((line, i) => { for (const n of names) if (new RegExp(`\\b${n}\\b`).test(line)) out.push(`${path.relative(root, p)}:${i + 1}: ${line.trim().slice(0, 160)}`); });
+    } } };
+  walk(root); return out.slice(0, 20).join("\n");
+}
+
 function parses(content, file) {
   if (!/\.m?js$/.test(file)) return true;
   const tmp = path.join(os.tmpdir(), `svels-check-${process.pid}.mjs`);
@@ -40,7 +52,7 @@ function parses(content, file) {
  * @param target {file, unused}   from unusedExports()
  * @param verify (editsByFile) => Promise<{ok, evidence}>   applies the file cuts already accepted + these edits, runs Kane
  */
-export async function agentTrim(projectDir, target, verify, log, maxAttempts = 2) {
+export async function agentTrim(projectDir, target, verify, log, maxAttempts = 3) {
   const original = fs.readFileSync(path.join(projectDir, target.file), "utf8");
   const messages = [{ role: "system", content: SYS }, { role: "user", content: `File: ${target.file}\nExports nothing imports: ${target.unused.join(", ")}\n\n${original}` }];
   const attempts = [];
@@ -63,8 +75,12 @@ export async function agentTrim(projectDir, target, verify, log, maxAttempts = 2
     // Closed loop: Kane's verdict goes back to the agent.
     const why = res.evidence.map((e) => `journey "${e.journey}" failed at "${e.failedStep || "?"}"${e.triage ? ` (Kane's triage: ${e.triage})` : ""}`).join("; ");
     log(`  Kane rejected it: ${why}. Sending that back to the agent.`);
+    // Tool step: where else does each removed name appear? (HTML pages, inline scripts, other files)
+    const hits = findUses(projectDir, target.file, reply.removed || []);
     messages.push({ role: "assistant", content: JSON.stringify({ removed: reply.removed, kept: reply.kept }) },
-      { role: "user", content: `Kane CLI replayed the app's user journeys in a real browser with your edit, and they failed: ${why}. Something you removed is still needed. Return a safer complete file that keeps whatever that journey needs.` });
+      { role: "user", content: `Kane CLI replayed the app's user journeys in a real browser with your edit, and they failed: ${why}.
+Places outside this file that mention the names you removed:\n${hits || "(none found)"}
+Keep only what the failing journey needs (the names used in those places). Still remove every other unused export. Return the complete file.` });
   }
   return { file: target.file, accepted: false, attempts };
 }
