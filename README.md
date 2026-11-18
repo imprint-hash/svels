@@ -1,14 +1,39 @@
 # Svels
 
-**Delete the code your app doesn't need. Kane CLI proves your user journeys still pass after every cut.**
+**Delete the code your app doesn't need. Kane CLI proves your user journeys still pass after every cut, and a coding agent learns from every cut Kane rejects.**
 
-AI coding agents only ever *add* code. A few weeks in, every vibe-coded app is full of old components, duplicate helpers, a v2 that was never wired in, and packages nobody imports. Nobody dares delete any of it, because a file that *looks* unused can still be loaded at runtime.
-
-Svels deletes it for you, and proves it was safe. It finds what looks unused, cuts it in batches, and after every cut **Kane CLI walks your real user journeys in a real browser**. A cut that keeps every journey green stays. A cut that breaks one is undone, and an agent reads Kane's failure and explains why that file is needed.
+AI coding agents only ever *add* code. A few weeks in, every vibe-coded app is full of old components, duplicate helpers, a v2 that was never wired in, and packages nobody imports. Nobody dares delete any of it, because code that *looks* unused can still be loaded at runtime. Svels deletes it for you, with proof: **nothing is removed unless Kane CLI walks your real user journeys in a real browser and they still pass.**
 
 Built for the **Kane CLI Online Hackathon** (TestMu AI, 12–19 Nov 2026).
 
-![Svels report: journey map, cuts, and the two files Kane saved](docs/report.png)
+## The four criteria, with the evidence
+
+**Ships.** One command (`svels run`) on a real app: scan → Kane baseline → batched cuts → agent edits → final Kane check → report. On the demo shop it removed **15 files (123 lines), 6 packages and 26 lines inside 3 used files**, and every journey still passes. It also ran on **real code nobody wrote for it**: two of our own earlier apps, a 40k-star GitHub repo and a clean template ([results](#tested-on-real-code-not-just-our-demo)).
+
+**Verified.** Kane caught three breaks that a static "dead code" scan would have shipped. Screenshots are from Kane's own browser at the moment it failed the cut; the raw NDJSON is in [`docs/evidence/`](docs/evidence/).
+
+| What Svels tried | What Kane saw | Kane's own triage |
+|---|---|---|
+| delete `src/themes/light.js` (loaded by a computed path) | ![blank shop](docs/evidence/light-js-removed-browse.png) the shop renders no products | *"Missing theme module prevents product catalog from rendering"* |
+| delete `src/promos/welcome10.js` (loaded by the code the shopper types) | ![promo rejected](docs/evidence/welcome10-removed-checkout.png) *"That promo code isn't valid."* | *"Recorded WELCOME10 promo code is no longer valid"* |
+| agent removes `badgeText` from `format.js` (only used by an inline script in `index.html`) | the header stays on "Cart (0)" after adding honey | *"Wildflower honey shows as added, but the header still displays an empty cart"* |
+
+**Closed loop.** The coding agent edits code, Kane verifies, and Kane's verdict goes back to the agent:
+
+```
+Agent edit src/lib/format.js (attempt 1): removes badgeText, percent, formatDate, pluralize, truncate
+  Kane rejected it: journey "browse" failed at "the header shows "Cart (1)""
+  (Kane's triage: Wildflower honey shows as added, but the header still displays an empty cart.)
+  Sending that back to the agent, with every place the removed names are still used.
+Agent edit src/lib/format.js (attempt 2): removes percent, formatDate, pluralize, truncate
+  Kane passed every journey -> the edit stands
+```
+
+File cuts loop the same way: a batch Kane fails is split and retried, a file Kane proves needed is explained by the agent and **remembered** (`.svels/learned.json`), so the next run doesn't try it again.
+
+**Craft.** A tool a developer can point at their own repo tonight: it **deletes** code where every other agent adds it. Batched cutting (delta debugging) keeps Kane runs proportional to what's actually needed, not to the size of the codebase, and Kane's cache does the rest: on a re-run, **all 34 Kane runs replayed from cache, 0 credits**. And it doesn't trust a green test blindly: files the browser loaded, or that live in folders the code builds paths into at runtime, are never auto-deleted even when Kane passes (a missing picture doesn't fail a text check).
+
+![Svels report: numbers, journey map, kept files with Kane's triage, agent edits](docs/report.png)
 
 ## Judges, start here
 
@@ -17,25 +42,20 @@ git clone https://github.com/imprint-hash/svels && cd svels
 npm install                       # installs Kane CLI (@testmuai/kane-cli)
 npx kane-cli login                # your TestMu account
 npm run scan                      # what looks unused in the demo shop (no Kane, instant)
-SVELS_CHROME=$(which google-chrome) npm run demo   # the full loop, writes examples/bloated-shop/.svels/report.html
+SVELS_CHROME=$(which google-chrome) GROQ_API_KEY=... npm run demo   # the full loop -> examples/bloated-shop/.svels/report.html
 ```
 
-The repo ships Kane's recordings of the three demo journeys, but recordings belong to the account that made them, so on your account Svels has Kane learn them fresh on the first run (about 65 Kane credits, once). Every trial after that replays from Kane's cache for free. No account handy? Open [`docs/sample-report.html`](docs/sample-report.html) for the report from our run.
+Kane recordings belong to the account that made them, so on your account Svels has Kane learn the three demo journeys fresh on the first run (about 65 Kane credits, once); every trial after that replays from Kane's cache for free. The agent needs a free Groq or Gemini key. No time to run it? Open [`docs/sample-report.html`](docs/sample-report.html), the report from our run.
 
-What you'll see on the demo shop (`examples/bloated-shop`, a small store built quickly with an AI agent):
+The demo shop (`examples/bloated-shop`) at a glance:
 
 | | |
 |---|---|
-| Candidates the import scan thinks are unused | **25** (19 files, 6 packages) |
-| Cut, with every journey still passing | **15 files (123 lines) and 6 packages** (lodash, moment, axios, jquery, uuid, classnames) |
-| Kept, because **Kane caught a break** | **2**: `src/themes/light.js` (browse broke) and `src/promos/welcome10.js` (checkout broke) |
-| Not cut, left for you to review | **2**: `themes/dark.js` and `promos/blackfriday.js`. Kane passed without them, but the code builds paths into those folders at runtime, so a user could still pick dark mode or type that code |
-| Trials needed | **8**, thanks to batched cutting |
-| Kane runs | 24 per full run; once the journeys are recorded, **all 24 replay from Kane's cache: 0 credits** |
-
-The two saves are the point. Both files are loaded by a computed path (`import(\`../themes/${name}.js\`)`, `import(\`../promos/${code}.js\`)`), so every static "dead code" tool would delete them. Kane catches it in the browser, the cut is undone, and the agent writes down why:
-
-> *"The checkout flow dynamically imports promos by name, so welcome10.js is required at runtime via a computed import path."*
+| Candidates the import scan thinks are unused | **25** (19 files, 6 packages) + 9 unused exports inside 3 used files |
+| Cut, with every journey still passing | **15 files (123 lines), 6 packages** (lodash, moment, axios, jquery, uuid, classnames), **8 exports (26 lines)** |
+| Kept, because Kane caught a break | **2 files** (`light.js`, `welcome10.js`) and **1 export** (`badgeText`) |
+| Not cut, left for you to review | **2**: `themes/dark.js`, `promos/blackfriday.js` (Kane passed, but the code builds paths into those folders at runtime) |
+| Kane runs | 34 per full run, **all replayed from cache once recorded (0 credits)** |
 
 ## Tested on real code, not just our demo
 
@@ -61,14 +81,16 @@ svels run
                   pass -> keep the cut            fail -> split the batch in half, try again
                 guarded files (loaded during a journey, or in a folder the code builds paths
                 into at runtime) are tested too, but a pass only puts them on a review list
-  4. explain    each cut Kane failed goes to an agent with the file, Kane's failure and
-                the runtime evidence -> one sentence on why it's needed + a keep rule
-  5. confirm    every accepted cut applied together -> Kane walks every journey again
-  6. report     .svels/report.html: numbers, journey map, kept files with reasons, every trial
+  4. agent      inside files the app uses, the coding agent removes exports nothing imports;
+                Kane replays the journeys; a failure goes back to the agent with Kane's triage
+                and every place the removed names still appear; up to 3 attempts
+  5. explain    each file Kane proved needed: the agent says why, and it is remembered
+  6. confirm    every accepted cut and edit applied together -> Kane walks every journey again
+  7. report     .svels/report.html: numbers, journey map, kept files with reasons, every trial
      --apply    writes the proven cuts to your project
 ```
 
-**The closed loop:** Svels cuts → Kane verifies in a real browser → Kane's NDJSON verdict decides keep or undo → failures go to the agent → the agent's keep rule feeds the next run.
+**The closed loop:** Svels cuts or the agent edits → Kane verifies in a real browser → Kane's NDJSON verdict decides keep or undo → failures go back to the agent with Kane's triage and where the code is still used → the agent retries; what Kane proved needed is remembered for the next run.
 
 ### How Svels uses Kane CLI
 
@@ -96,14 +118,15 @@ Environment: `SVELS_CHROME` (a Chrome binary), `GROQ_API_KEY` or `GEMINI_API_KEY
 ## Honest limits
 
 - **Svels is only as safe as your journeys.** It guarantees the journeys you wrote still pass; code used only by flows you didn't write a journey for can be cut. The report lists exactly which journeys covered which files.
-- **Today it cuts whole files and whole packages**, and it serves static or prebuilt apps itself. Bundled dev servers (Vite, Next) and function-level cuts are next.
-- The demo app was written for this hackathon to show realistic AI leftovers, including the two dynamic-import traps.
+- **It cuts whole files, whole packages and unused exports inside files**, and it serves static or prebuilt apps itself. Bundled dev servers (Vite, Next) are next.
+- The demo app was written for this hackathon to show realistic AI leftovers, including the three traps above. The real-code table is the honest test.
+- The agent is a free model (Groq gpt-oss-120b, Gemini fallback); on a bad day it can be over-cautious and keep dead code. It can never remove code Kane didn't pass.
 
 ## Built with
 
 - **Coding agent:** Claude Code wrote Svels with me during the event (12–19 Nov 2026). The repository started on 17 Nov.
 - **Verification:** Kane CLI 0.10.3 (TestMu AI).
-- **Agent explanations:** Groq (gpt-oss-120b), Gemini as a fallback.
+- **In-product agent:** Groq (gpt-oss-120b), Gemini as a fallback, for edits inside files and explanations.
 - No other runtime dependencies: Node 22 built-ins only.
 
 MIT licence.
