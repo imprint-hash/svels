@@ -72,7 +72,7 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
       const res = await runAll(`trial ${trials.length + 1}`, false);
       const ok = res.every((r) => r.ok);
       trials.push({ size: set.length, ok, set, journeys: res.map(({ journey, ok, failedStep, replayed, credits }) => ({ journey, ok, failedStep, replayed, credits })) });
-      return { ok, evidence: res.filter((r) => !r.ok).map(({ journey, failedStep, resultMd, evidence }) => ({ journey, failedStep, resultMd, evidence })) };
+      return { ok, evidence: res.filter((r) => !r.ok).map(({ journey, failedStep, triage, resultMd, evidence }) => ({ journey, failedStep, triage, resultMd, evidence })) };
     };
     const a = await shrink(quiet, tryRemove);
     const b = await shrink(runtimeSeen, async (set) => tryRemove([...a.accepted, ...set]));

@@ -17,7 +17,7 @@ export function writeReport(svelsDir, s) {
   const tile = (f) => { const st = state(f), j = usedBy(f), k = kept.get(f);
     return `<li class="f ${st}" title="${esc(label[st])}"><span class="name">${esc(path.posix.basename(f))}</span>${j.length ? `<span class="tags">${j.map((x) => `<i>${esc(x)}</i>`).join("")}</span>` : ""}${k ? `<span class="why">${esc(k.why)}</span>` : ""}</li>`; };
   const map = Object.entries(groups).map(([dir, fs_]) => `<section class="dir"><h4>${esc(dir === "." ? "/" : dir + "/")}</h4><ul>${fs_.map(tile).join("")}</ul></section>`).join("");
-  const keptRows = s.kept.map((k) => `<tr><td><code>${esc(k.item.replace(/^(file|pkg):/, ""))}</code></td><td>${k.failures.map((f) => `${esc(f.journey)} failed at “${esc(f.failedStep || "?")}”`).join("<br>")}</td><td>${esc(k.why)}</td><td><code>${esc(k.keep_rule)}</code></td></tr>`).join("");
+  const keptRows = s.kept.map((k) => `<tr><td><code>${esc(k.item.replace(/^(file|pkg):/, ""))}</code></td><td>${k.failures.map((f) => `<b>${esc(f.journey)}</b> failed: “${esc(f.failedStep || "?")}”${f.triage ? `<br><span class="tri">Kane's triage: ${esc(f.triage)}</span>` : ""}`).join("<br>")}</td><td>${esc(k.why)}</td><td><code>${esc(k.keep_rule)}</code></td></tr>`).join("");
   const trialRows = s.trials.map((t, i) => `<tr><td>${i + 1}</td><td>${t.size}</td><td>${t.journeys.map((j) => `<span class="pill ${j.ok ? "ok" : "bad"}">${esc(j.journey)} ${j.ok ? "pass" : "fail"}${j.replayed ? " · replay" : ""}</span>`).join(" ")}</td><td>${t.ok ? "kept the cut" : "undid the cut"}</td></tr>`).join("");
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Svels report · ${esc(s.project)}</title>
 <style>
@@ -36,7 +36,7 @@ main{max-width:1080px;margin:0 auto;padding:32px 16px 64px}h1{font:600 30px/1.2 
 .tags i{font-style:normal;font-size:11px;margin-left:6px;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--walk) 18%,transparent);color:var(--walk)}
 .why{display:block;font-family:"IBM Plex Sans",sans-serif;color:var(--save);font-size:12px;margin-top:2px;text-decoration:none}
 .wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}th{font-size:12px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em}
-.pill{display:inline-block;font:12px "IBM Plex Mono",monospace;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}.pill.ok{color:var(--walk)}.pill.bad{color:var(--save);border-color:var(--save)}code{font-family:"IBM Plex Mono",monospace;font-size:13px}
+.pill{display:inline-block;font:12px "IBM Plex Mono",monospace;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}.pill.ok{color:var(--walk)}.pill.bad{color:var(--save);border-color:var(--save)}.tri{color:var(--soft);font-size:13px}code{font-family:"IBM Plex Mono",monospace;font-size:13px}
 </style></head><body><main>
 <h1>svels · ${esc(s.project)}</h1><p class="sub">${esc(new Date(s.at).toUTCString())} · ${s.seconds}s · every cut verified by Kane CLI in a real browser</p>
 <div class="nums"><div class="n"><b>${removed.size}</b><span>files cut (of ${s.candidates} candidates)</span></div><div class="n"><b>${s.linesRemoved}</b><span>lines removed</span></div>

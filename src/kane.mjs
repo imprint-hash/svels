@@ -30,8 +30,8 @@ export function runJourney(bin, file, { cdp, heal = false, timeout = 300, logDir
       const result = fs.existsSync(resultMd) ? fs.readFileSync(resultMd, "utf8") : "";
       let failedStep = (result.match(/^## (.+?) [✗x] (?:failed|broken)/m) || [])[1] || null;
       if (!failedStep && summary?.overall_status !== "passed") {
-        const bad = [...lines].reverse().find((l) => /fail|broken|error/i.test(l.status || l.event || "") && (l.remark || l.objective || l.detail));
-        failedStep = bad ? String(bad.objective || bad.remark || bad.detail).slice(0, 140) : null;
+        const bad = [...lines].reverse().find((l) => /fail|broken|error/i.test(l.status || l.event || "") && (l.summary || l.remark || l.objective || l.detail));
+        failedStep = bad ? String(bad.summary || bad.objective || bad.remark || bad.detail).replace(/^\w+: /, "").slice(0, 160) : null;
       }
       // Kane triages its own failures: an "automation_bug" means the test/replay misfired, not the app.
       const verdict = lines.find((l) => l.type === "test_md_bug_verdict");
