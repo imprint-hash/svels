@@ -1,6 +1,7 @@
 // The Svels loop: baseline journeys (and the journey map) -> batched cuts verified by Kane ->
 // failures explained by the agent -> report, and optionally apply the proven cuts to the project.
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { buildGraph } from "./graph.mjs";
 import { shrink } from "./ddmin.mjs";
@@ -28,7 +29,7 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
   const t0 = Date.now();
   const { cfg, graph, candidates } = scan(projectDir);
   const svelsDir = path.join(projectDir, ".svels"); fs.mkdirSync(svelsDir, { recursive: true });
-  const work = path.join(svelsDir, "work");
+  const work = path.join(os.tmpdir(), `svels-work-${path.basename(projectDir)}-${process.pid}`);
   const journeys = listJourneys(path.join(projectDir, cfg.journeys));
   if (!journeys.length) throw new Error(`No *_test.md journeys in ${cfg.journeys}. Write 1-3 plain-English journeys first.`);
   const bin = kaneBin(projectDir);
@@ -41,7 +42,12 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     const res = [];
     for (const j of journeys) {
       rec.take();
-      const r = await runJourney(bin, j, { cdp: chrome.endpoint, heal });
+      let r = await runJourney(bin, j, { cdp: chrome.endpoint, heal, logDir: path.join(svelsDir, "kane-logs") });
+      if (!r.ok && r.automationBug) { // Kane says the test misfired, not the app: retry once before believing it
+        log(`  retry  ${r.journey}: Kane triaged the failure as a test problem ("${(r.triage || "").slice(0, 80)}")`);
+        credits += r.credits; rec.take();
+        r = { ...(await runJourney(bin, j, { cdp: chrome.endpoint, heal, logDir: path.join(svelsDir, "kane-logs") })), retried: true };
+      }
       r.loaded = rec.take(); r.label = label; credits += r.credits; runs.push(r); res.push(r);
       log(`  ${r.ok ? "PASS" : "FAIL"}  ${r.journey}${r.replayed ? " (replayed from cache)" : ""}${r.failedStep ? ` at "${r.failedStep}"` : ""}  ${r.credits ? r.credits + " credits" : ""}`);
       if (!r.ok && !heal) break; // one failing journey is enough to reject a cut
@@ -95,5 +101,5 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     log(`\nRemoved ${removedFiles.length} files (${summary.linesRemoved} lines) and ${summary.packagesRemoved.length} packages. Kept ${needed.length} that Kane proved are needed.`);
     log(`Final check: ${summary.finalPassed ? "all journeys pass" : "FAILED, nothing applied"}. Kane runs: ${summary.kaneRuns} (${summary.replays} replayed free). Report: ${out}`);
     return summary;
-  } finally { rec.close(); await server.close(); chrome.stop(); }
+  } finally { rec.close(); await server.close(); chrome.stop(); fs.rmSync(work, { recursive: true, force: true }); }
 }

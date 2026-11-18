@@ -2,3 +2,4 @@ node_modules/
 .svels/
 .env
 *.log
+.svels-run*.log

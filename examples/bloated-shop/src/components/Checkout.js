@@ -17,7 +17,8 @@ export function renderCheckout(el) {
       try { const promo = (await import(`../promos/${data.promo.toLowerCase()}.js`)).default; total = promo.apply(total); note = ` (${promo.label})`; }
       catch { document.getElementById("msg").textContent = "That promo code isn't valid."; return; }
     }
-    const ref = "LD-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+    // Order reference derived from the order itself, so the same order always gets the same reference.
+    const ref = "LD-" + [...`${data.email}|${total}`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36).toUpperCase().slice(0, 6);
     cart.clear();
     el.innerHTML = `<h1>Thank you, ${data.name.split(" ")[0]}!</h1><p class="ok">Order ${ref} confirmed. We charged ${money(total)}${note}. A receipt is on its way to ${data.email}.</p><a href="#/">Back to the shop</a>`;
   });

@@ -11,7 +11,7 @@ export function kaneBin(projectDir) {
   return process.env.SVELS_KANE || local || "kane-cli";
 }
 
-export function runJourney(bin, file, { cdp, heal = false, timeout = 300 }) {
+export function runJourney(bin, file, { cdp, heal = false, timeout = 300, logDir = null }) {
   const args = ["testmd", "run", file, "--cdp-endpoint", cdp, "--agent", "--timeout", String(timeout)];
   if (!heal) args.push("--no-adaptive-heal");
   return new Promise((resolve) => {
@@ -28,10 +28,18 @@ export function runJourney(bin, file, { cdp, heal = false, timeout = 300 }) {
       const stem = path.basename(file).replace(/_test\.md$/, "");
       const resultMd = path.join(path.dirname(file), `output-${stem}`, "Result.md");
       const result = fs.existsSync(resultMd) ? fs.readFileSync(resultMd, "utf8") : "";
-      const failedStep = (result.match(/^## (.+?) ✗ failed/m) || [])[1] || null;
+      let failedStep = (result.match(/^## (.+?) [✗x] (?:failed|broken)/m) || [])[1] || null;
+      if (!failedStep && summary?.overall_status !== "passed") {
+        const bad = [...lines].reverse().find((l) => /fail|broken|error/i.test(l.status || l.event || "") && (l.remark || l.objective || l.detail));
+        failedStep = bad ? String(bad.objective || bad.remark || bad.detail).slice(0, 140) : null;
+      }
+      // Kane triages its own failures: an "automation_bug" means the test/replay misfired, not the app.
+      const verdict = lines.find((l) => l.type === "test_md_bug_verdict");
+      const automationBug = !!verdict && verdict.family === "automation_bug";
+      if (logDir) { fs.mkdirSync(logDir, { recursive: true }); fs.writeFileSync(path.join(logDir, `${Date.now()}-${stem}.ndjson`), out); }
       resolve({ journey: stem, ok: summary?.overall_status === "passed", status: summary?.overall_status || "error",
         steps: summary?.steps || null, replayed: summary?.steps?.replay_decisions || 0, credits: Math.round(credits * 1000) / 1000,
-        failedStep, evidence, resultMd: fs.existsSync(resultMd) ? resultMd : null, raw: summary ? null : out.slice(-600) });
+        failedStep, automationBug, triage: verdict?.one_liner || null, evidence, resultMd: fs.existsSync(resultMd) ? resultMd : null, raw: summary ? null : out.slice(-600) });
     });
   });
 }

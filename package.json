@@ -1,0 +1,21 @@
+{
+  "name": "svels",
+  "version": "0.1.0",
+  "description": "Delete the code your app doesn't need. Kane CLI proves your user journeys still pass after every cut.",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "demo": "node bin/svels.mjs run examples/bloated-shop",
+    "scan": "node bin/svels.mjs scan examples/bloated-shop"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@testmuai/kane-cli": "0.10.3"
+  },
+  "type": "module",
+  "bin": {
+    "svels": "bin/svels.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
