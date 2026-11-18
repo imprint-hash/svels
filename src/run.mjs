@@ -55,6 +55,7 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     return res;
   };
   try {
+    log(`Guarded folders (paths built at runtime): ${graph.dynamicDirs.join(", ") || "none"}`);
     log(`Svels: ${candidates.length} candidates (${graph.unreachableFiles.length} files, ${graph.unusedPkgs.length} packages) look unused to the import scan.`);
     log(`Baseline: Kane walks ${journeys.length} journeys on the untouched app.`);
     freshCopy(projectDir, work); server.setRoot(work);
@@ -63,7 +64,10 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     const journeyMap = Object.fromEntries(base.map((r) => [r.journey, r.loaded]));
     const loadedIn = (rel) => base.filter((r) => r.loaded.includes(rel) || r.loaded.includes(rel.replace(/^public\//, ""))).map((r) => r.journey);
     // Files the browser loaded during a journey are suspicious: try them one at a time, last.
-    const runtimeSeen = candidates.filter((c) => c.startsWith("file:") && loadedIn(c.slice(5)).length);
+    // "Guarded" candidates: loaded by the browser during a journey, or inside a folder the code builds
+    // paths into at runtime. Kane can prove they're needed, but never that they're safe to delete.
+    const inDynamic = (rel) => graph.dynamicDirs.some((d) => rel.startsWith(d));
+    const runtimeSeen = candidates.filter((c) => c.startsWith("file:") && (loadedIn(c.slice(5)).length || inDynamic(c.slice(5))));
     const quiet = candidates.filter((c) => !runtimeSeen.includes(c));
     const trials = [];
     const tryRemove = async (set) => {
@@ -75,8 +79,12 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
       return { ok, evidence: res.filter((r) => !r.ok).map(({ journey, failedStep, triage, resultMd, evidence }) => ({ journey, failedStep, triage, resultMd, evidence })) };
     };
     const a = await shrink(quiet, tryRemove);
-    const b = await shrink(runtimeSeen, async (set) => tryRemove([...a.accepted, ...set]));
-    const accepted = [...a.accepted, ...b.accepted], needed = [...a.needed, ...b.needed];
+    // Files the browser really loaded are tried one at a time. If Kane fails, they're kept with proof.
+    // If Kane still passes, they are NOT cut: Kane checks behaviour, not looks (an image or font can
+    // vanish without failing a journey). They go on a review list instead.
+    const g = await shrink(runtimeSeen, async (set) => tryRemove([...a.accepted, ...set]));
+    const b = { needed: g.needed, review: g.accepted.map((item) => ({ item, journeys: loadedIn(item.slice(5)), dynamic: inDynamic(item.slice(5)) })) };
+    const accepted = [...a.accepted], needed = [...a.needed, ...b.needed];
     // Closed loop: Kane's failures go to the agent, which explains each kept file and proposes a keep rule.
     const referencers = graph.reachable.filter((f) => /\.(m?js|ts|tsx|jsx)$/.test(f));
     for (const n of needed) n.explain = await explainNeeded(projectDir, n.item, n.evidence || [], { journeys: loadedIn(n.item.slice(5)), referencers });
@@ -87,7 +95,7 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     const removedFiles = accepted.filter((x) => x.startsWith("file:")).map((x) => x.slice(5));
     const summary = {
       project: path.basename(projectDir), at: new Date().toISOString(), seconds: Math.round((Date.now() - t0) / 1000),
-      candidates: candidates.length, removed: accepted, kept: needed.map((n) => ({ item: n.item, failures: n.evidence, ...n.explain })),
+      candidates: candidates.length, removed: accepted, review: b.review, kept: needed.map((n) => ({ item: n.item, failures: n.evidence, ...n.explain })),
       linesRemoved: removedFiles.reduce((s, f) => s + lineCount(path.join(projectDir, f)), 0),
       bytesRemoved: removedFiles.reduce((s, f) => s + byteSize(path.join(projectDir, f)), 0),
       packagesRemoved: accepted.filter((x) => x.startsWith("pkg:")).map((x) => x.slice(4)),

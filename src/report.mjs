@@ -12,8 +12,9 @@ export function writeReport(svelsDir, s) {
   const files = s.allFiles.filter((f) => !f.startsWith(".svels/") && !/(^|\/)(output-[^/]+|\.testmuai)\//.test(f)).sort();
   const groups = {};
   for (const f of files) (groups[path.posix.dirname(f)] ||= []).push(f);
-  const state = (f) => removed.has(f) ? "cut" : kept.has(f) ? "saved" : usedBy(f).length ? "walked" : s.reachable.includes(f) ? "linked" : "other";
-  const label = { cut: "cut, journeys still pass", saved: "kept, Kane caught a break", walked: "loaded by a journey", linked: "imported", other: "not checked" };
+  const review = new Set((s.review || []).map((r) => r.item.slice(5)));
+  const state = (f) => removed.has(f) ? "cut" : kept.has(f) ? "saved" : review.has(f) ? "review" : usedBy(f).length ? "walked" : s.reachable.includes(f) ? "linked" : "other";
+  const label = { review: "guarded: not cut, for you to review", cut: "cut, journeys still pass", saved: "kept, Kane caught a break", walked: "loaded by a journey", linked: "imported", other: "not checked" };
   const tile = (f) => { const st = state(f), j = usedBy(f), k = kept.get(f);
     return `<li class="f ${st}" title="${esc(label[st])}"><span class="name">${esc(path.posix.basename(f))}</span>${j.length ? `<span class="tags">${j.map((x) => `<i>${esc(x)}</i>`).join("")}</span>` : ""}${k ? `<span class="why">${esc(k.why)}</span>` : ""}</li>`; };
   const map = Object.entries(groups).map(([dir, fs_]) => `<section class="dir"><h4>${esc(dir === "." ? "/" : dir + "/")}</h4><ul>${fs_.map(tile).join("")}</ul></section>`).join("");
@@ -32,7 +33,7 @@ main{max-width:1080px;margin:0 auto;padding:32px 16px 64px}h1{font:600 30px/1.2 
 .map{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}.dir{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
 .dir h4{margin:0 0 8px;font:600 13px "IBM Plex Mono",monospace;color:var(--soft)}.dir ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .f{border-left:4px solid var(--line);padding:4px 8px;border-radius:4px;font:13px "IBM Plex Mono",monospace;overflow-wrap:anywhere}
-.f.cut{border-color:var(--cut);color:var(--soft);text-decoration:line-through}.f.walked{border-color:var(--walk)}.f.saved{border-color:var(--save);background:color-mix(in srgb,var(--save) 10%,transparent)}.f.linked{border-color:color-mix(in srgb,var(--walk) 40%,var(--line))}
+.f.cut{border-color:var(--cut);color:var(--soft);text-decoration:line-through}.f.walked{border-color:var(--walk)}.f.saved{border-color:var(--save);background:color-mix(in srgb,var(--save) 10%,transparent)}.f.review{border-color:#b08d2a}.f.linked{border-color:color-mix(in srgb,var(--walk) 40%,var(--line))}
 .tags i{font-style:normal;font-size:11px;margin-left:6px;padding:1px 6px;border-radius:999px;background:color-mix(in srgb,var(--walk) 18%,transparent);color:var(--walk)}
 .why{display:block;font-family:"IBM Plex Sans",sans-serif;color:var(--save);font-size:12px;margin-top:2px;text-decoration:none}
 .wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}th{font-size:12px;color:var(--soft);text-transform:uppercase;letter-spacing:.06em}
@@ -46,6 +47,7 @@ main{max-width:1080px;margin:0 auto;padding:32px 16px 64px}h1{font:600 30px/1.2 
 <h2>Journey map</h2><div class="legend"><span><i style="background:var(--walk)"></i>loaded while Kane walked a journey</span><span><i style="background:var(--save)"></i>looked unused, but Kane caught a break: kept</span><span><i style="background:var(--cut)"></i>cut, journeys still pass</span></div>
 <div class="map">${map}</div>
 ${s.kept.length ? `<h2>Kept because Kane caught a break</h2><div class="wrap"><table><tr><th>File</th><th>What Kane saw</th><th>Why it's needed (agent)</th><th>Keep rule</th></tr>${keptRows}</table></div>` : ""}
+${(s.review || []).length ? `<h2>Not cut: for you to review</h2><p class="tri">Kane passed without these, but Svels won't delete them on its own: either the browser loaded them during a journey (an image or font can vanish without failing a journey), or the code builds paths into their folder at runtime (another user, theme or promo code might need them).</p><div class="wrap"><table><tr><th>File</th><th>Why it's guarded</th></tr>${s.review.map((r) => `<tr><td><code>${esc(r.item.slice(5))}</code></td><td>${[r.journeys.length ? "loaded during " + r.journeys.map(esc).join(", ") : "", r.dynamic ? "its folder is built into paths at runtime" : ""].filter(Boolean).join("; ")}</td></tr>`).join("")}</table></div>` : ""}
 ${s.packagesRemoved.length ? `<h2>Packages dropped</h2><p>${s.packagesRemoved.map((p) => `<code>${esc(p)}</code>`).join(", ")}</p>` : ""}
 <h2>Trials</h2><div class="wrap"><table><tr><th>#</th><th>Items removed</th><th>Kane</th><th>Result</th></tr>${trialRows}</table></div>
 </main></body></html>`;

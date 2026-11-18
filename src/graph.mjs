@@ -17,7 +17,11 @@ const SPEC_RE = [
   /\brequire\(\s*["']([^"']+)["']\s*\)/g,
   /@import\s+["']([^"']+)["']/g,
   /url\(\s*["']?([^"')]+)["']?\s*\)/g,
-  /\b(?:src|href)=["']([^"'#?]+)["']/g,
+  /\b(?:src|href|content|poster|data-src)=["']([^"'#?]+)["']/g,
+  /"(?:src|url|href|icon)"\s*:\s*"([^"#?]+)"/g, // manifest.json and other JSON configs
+  // A complete file path written as a plain string in code ("/demo/sam/face.jpg", 'products/a.webp').
+  // Strings built at runtime (`/demo/${id}/face.jpg`) are left for Kane to settle in the browser.
+  /["'`]((?:\.{0,2}\/)?[\w@~.-]+(?:\/[\w@~.-]+)*\.(?:png|jpe?g|webp|gif|svg|ico|css|m?js|json|woff2?|mp4|webm|mp3))["'`]/g,
 ];
 
 export function listFiles(root, dir = root, out = []) {
@@ -33,6 +37,7 @@ export function listFiles(root, dir = root, out = []) {
 
 function specifiers(text) {
   const found = new Set();
+  for (const m of text.matchAll(/\bsrcset=["']([^"']+)["']/g)) for (const part of m[1].split(",")) found.add(part.trim().split(/\s+/)[0]);
   for (const re of SPEC_RE) { re.lastIndex = 0; let m; while ((m = re.exec(text))) found.add(m[1]); }
   return [...found];
 }
@@ -41,7 +46,9 @@ function resolveFile(root, fromFile, spec, aliases) {
   let base;
   if (spec.startsWith(".")) base = path.join(path.dirname(path.join(root, fromFile)), spec);
   else if (spec.startsWith("/")) base = [path.join(root, "public", spec), path.join(root, spec)].find((p) => fs.existsSync(p)) || path.join(root, spec);
-  else {
+  else if (!spec.startsWith("@") && /\.[a-z0-9]{2,5}$/i.test(spec) && fs.existsSync(path.join(path.dirname(path.join(root, fromFile)), spec))) {
+    base = path.join(path.dirname(path.join(root, fromFile)), spec); // plain relative path in HTML/CSS ("assets/img/a.png")
+  } else {
     const alias = Object.keys(aliases).find((a) => spec === a || spec.startsWith(a + "/"));
     if (!alias) return null;
     base = path.join(root, aliases[alias], spec.slice(alias.length));
@@ -53,11 +60,14 @@ function resolveFile(root, fromFile, spec, aliases) {
 
 const pkgName = (spec) => (spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0]);
 
-export function buildGraph(root, { entries, aliases = { "@": "src" }, keep = [] } = {}) {
+export function buildGraph(root, opts = {}) {
+  const { entries, aliases = { "@": "src" }, keep = [] } = opts;
   const files = listFiles(root);
-  const codeLike = (f) => [...CODE_EXT, ".css", ".scss", ".html"].some((e) => f.endsWith(e));
+  const codeLike = (f) => [...CODE_EXT, ".css", ".scss", ".html", ".htm", ".json", ".webmanifest"].some((e) => f.endsWith(e));
   const edges = {}, usedPkgs = {};
-  const seen = new Set(), queue = [...entries.filter((e) => fs.existsSync(path.join(root, e)))];
+  // Every HTML page is a way into the site (people open /stats.html directly), so each one is an entry.
+  const pages = opts.allPages === false ? [] : files.filter((f) => /\.html?$/i.test(f) && !keep.some((k) => f.startsWith(k.replace(/\/?$/, "/"))) && !/(^|\/)(output-[^/]+|\.testmuai|docs)\//.test(f));
+  const seen = new Set(), queue = [...new Set([...entries, ...pages])].filter((e) => fs.existsSync(path.join(root, e)));
   while (queue.length) {
     const f = queue.shift(); if (seen.has(f)) continue; seen.add(f);
     edges[f] = [];
@@ -69,11 +79,30 @@ export function buildGraph(root, { entries, aliases = { "@": "src" }, keep = [] 
       else if (!spec.startsWith(".") && !spec.startsWith("/")) (usedPkgs[pkgName(spec)] ||= []).push(f);
     }
   }
+  // Folders the code builds paths into at runtime: `../themes/${name}.js`, `/demo/${id}/face.jpg`.
+  const dynamicDirs = new Set();
+  for (const f of seen) {
+    if (!/\.(m?js|cjs|jsx|tsx?|html?)$/.test(f)) continue;
+    // Every path fragment that runs straight into a ${...}: `<img src="/demo/${id}/face.jpg">` -> "/demo/"
+    for (const m of fs.readFileSync(path.join(root, f), "utf8").matchAll(/[`"'(=\s>]((?:\.{1,2}\/|\/)?(?:[\w.~@-]+\/)+)\$\{/g)) {
+      const tail = m[1];
+      if (!tail || /^(https?:|\/\/)/.test(tail) || /^(api|v\d+)\/$/.test(tail.replace(/^\//, ""))) continue;
+      const dirPart = tail;
+      const abs = dirPart.startsWith("/") ? path.join(root, dirPart) : path.join(path.dirname(path.join(root, f)), dirPart);
+      const rel = path.relative(root, abs).split(path.sep).join("/");
+      if (!rel.startsWith("..") && rel) dynamicDirs.add(rel.replace(/\/?$/, "/"));
+      if (dirPart.startsWith("/") && fs.existsSync(path.join(root, "public", dirPart))) dynamicDirs.add(("public" + dirPart).replace(/\/?$/, "/"));
+    }
+  }
   const pkg = fs.existsSync(path.join(root, "package.json")) ? JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")) : {};
   const declared = Object.keys(pkg.dependencies || {});
   const isKept = (f) => keep.some((k) => f === k || f.startsWith(k.replace(/\/?$/, "/")));
-  const sourceRoots = ["src/", "app/", "pages/", "components/", "lib/", "public/"];
-  const unreachableFiles = files.filter((f) => !seen.has(f) && !isKept(f) && sourceRoots.some((r) => f.startsWith(r)));
+  // Only files a browser could load count as candidates; docs, configs and build sources are left alone.
+  const servable = /\.(m?js|cjs|jsx|tsx?|css|html?|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|otf|eot|json)$/i;
+  const notTooling = (f) => !/(^|\/)(package(-lock)?\.json|svels\.config\.json|tsconfig[^/]*\.json|vercel\.json|manifest\.json|robots\.txt)$/i.test(f) && !/(^|\/)(output-[^/]+|\.testmuai|test|tests|__tests__|scripts|api|docs)\//.test(f);
+  const roots = (opts.roots || []).map((r) => r.replace(/\/?$/, "/"));
+  const inRoots = (f) => !roots.length || roots.some((r) => f.startsWith(r));
+  const unreachableFiles = files.filter((f) => !seen.has(f) && !isKept(f) && inRoots(f) && servable.test(f) && notTooling(f));
   const unusedPkgs = declared.filter((d) => !usedPkgs[d] && !keep.includes(d));
-  return { files, reachable: [...seen], edges, usedPkgs, unreachableFiles, unusedPkgs };
+  return { files, reachable: [...seen], edges, usedPkgs, unreachableFiles, unusedPkgs, dynamicDirs: [...dynamicDirs] };
 }
