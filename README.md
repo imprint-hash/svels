@@ -27,14 +27,28 @@ What you'll see on the demo shop (`examples/bloated-shop`, a small store built q
 | | |
 |---|---|
 | Candidates the import scan thinks are unused | **25** (19 files, 6 packages) |
-| Cut, with every journey still passing | **17 files (128 lines) and 6 packages** (lodash, moment, axios, jquery, uuid, classnames) |
+| Cut, with every journey still passing | **15 files (123 lines) and 6 packages** (lodash, moment, axios, jquery, uuid, classnames) |
 | Kept, because **Kane caught a break** | **2**: `src/themes/light.js` (browse broke) and `src/promos/welcome10.js` (checkout broke) |
-| Trials needed | **4**, thanks to batched cutting |
-| Kane runs | 14 per full run; on our second run **all 14 replayed from Kane's cache: 0 credits** |
+| Not cut, left for you to review | **2**: `themes/dark.js` and `promos/blackfriday.js`. Kane passed without them, but the code builds paths into those folders at runtime, so a user could still pick dark mode or type that code |
+| Trials needed | **8**, thanks to batched cutting |
+| Kane runs | 24 per full run; once the journeys are recorded, **all 24 replay from Kane's cache: 0 credits** |
 
 The two saves are the point. Both files are loaded by a computed path (`import(\`../themes/${name}.js\`)`, `import(\`../promos/${code}.js\`)`), so every static "dead code" tool would delete them. Kane catches it in the browser, the cut is undone, and the agent writes down why:
 
 > *"The checkout flow dynamically imports promos by name, so welcome10.js is required at runtime via a computed import path."*
+
+## Tested on real code, not just our demo
+
+Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was written for Svels.
+
+| Code | Looked unused | Cut (Kane-verified) | Kept: Kane caught a break | Guarded, not cut |
+|---|---|---|---|---|
+| **Aisle**, a live hackathon site (ours, built before Svels) | 3 | 1: `img/kite.svg`, an image the site stopped using | **1: `data/campaign.json`.** The page fetches it by URL; without it Kane saw the task dropdown lose "Lagos, Nigeria" | – |
+| **Parasol**, a 90-file web app (ours, built before Svels) | 42 | 1: an unused icon | – | **41.** Kane passed with all 41 removed (a missing picture doesn't fail a text check), but the app builds paths into `demo/`, `products/`, `scenes/` at runtime, so Svels refused |
+| **[bradtraversy/50projects50days](https://github.com/bradtraversy/50projects50days)** (40k stars, 52 apps, 167 files) | **1** | 1: `event-keycodes/dark-style.css`, referenced nowhere. Kane pressed "a" and still saw key code 65 | – | – |
+| **[StartBootstrap Agency](https://github.com/StartBootstrap/startbootstrap-agency)** (built site, 25 files) | **0** | – | – | – |
+
+What the real runs taught Svels (each is now in the scanner): every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
 
 ## How it works
 
@@ -45,7 +59,8 @@ svels run
                 Svels records every file the browser loads -> the journey map
   3. cut        remove a whole batch -> Kane replays every journey
                   pass -> keep the cut            fail -> split the batch in half, try again
-                files the browser loaded during a journey are tried one at a time, last
+                guarded files (loaded during a journey, or in a folder the code builds paths
+                into at runtime) are tested too, but a pass only puts them on a review list
   4. explain    each cut Kane failed goes to an agent with the file, Kane's failure and
                 the runtime evidence -> one sentence on why it's needed + a keep rule
   5. confirm    every accepted cut applied together -> Kane walks every journey again

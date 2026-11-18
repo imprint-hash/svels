@@ -1,7 +1,7 @@
 {
   "project": "bloated-shop",
-  "at": "2026-11-18T08:04:20.240Z",
-  "seconds": 480,
+  "at": "2026-11-18T08:45:37.677Z",
+  "seconds": 776,
   "candidates": 25,
   "removed": [
     "file:public/img/hero-1.png",
@@ -18,15 +18,25 @@
     "file:src/lib/validators-copy.js",
     "file:src/lib/validators.js",
     "file:src/pages/admin-draft.js",
-    "file:src/promos/blackfriday.js",
     "file:src/styles/unused-theme.css",
-    "file:src/themes/dark.js",
     "pkg:lodash",
     "pkg:moment",
     "pkg:axios",
     "pkg:jquery",
     "pkg:uuid",
     "pkg:classnames"
+  ],
+  "review": [
+    {
+      "item": "file:src/promos/blackfriday.js",
+      "journeys": [],
+      "dynamic": true
+    },
+    {
+      "item": "file:src/themes/dark.js",
+      "journeys": [],
+      "dynamic": true
+    }
   ],
   "kept": [
     {
@@ -35,9 +45,9 @@
         {
           "journey": "checkout",
           "failedStep": "the page says the order is confirmed and that it charged $6.08 with WELCOME10",
-          "triage": "The replay correctly entered WELCOME10, but the live checkout rejected it, so the recorded expected charge and confirmation can no longer occur.",
+          "triage": "Checkout rejects WELCOME10 instead of confirming the Jasmine rice order at $6.08.",
           "resultMd": "/home/imprint/svels/examples/bloated-shop/svels/journeys/output-checkout/Result.md",
-          "evidence": "/home/imprint/.testmuai/kaneai/sessions/bf9f0763-ef3b-45fc-ab4d-75a883f6db67/evidence/caadee0f-a8f1-4693-89e2-635e73617f88.evidence"
+          "evidence": "/home/imprint/.testmuai/kaneai/sessions/b391eada-5e2d-4752-9385-7042309e2404/evidence/10bdc9ed-c051-489b-af19-f23e7bb534c0.evidence"
         }
       ],
       "why": "The checkout page dynamically imports promos using a variable‑based import(`../promos/${data.promo.toLowerCase()}.js`), so the file must exist at runtime.",
@@ -50,9 +60,9 @@
         {
           "journey": "browse",
           "failedStep": "Clicking Wildflower honey to open its page",
-          "triage": "The storefront cannot load the product list because a required theme file is missing.",
+          "triage": "The storefront cannot load because its light theme file is missing, so Wildflower honey is not available to click.",
           "resultMd": "/home/imprint/svels/examples/bloated-shop/svels/journeys/output-browse/Result.md",
-          "evidence": "/home/imprint/.testmuai/kaneai/sessions/ca1cd047-85f7-4568-b986-38ff2fdacea6/evidence/60b34e4d-280c-4858-8206-642793ba065d.evidence"
+          "evidence": "/home/imprint/.testmuai/kaneai/sessions/f180d8f3-5eb7-4e1f-98b9-9c9ee4415e86/evidence/3845482b-a831-424d-9f51-704d5b4e2c76.evidence"
         }
       ],
       "why": "The app dynamically imports theme modules by name, so src/themes/light.js is required at runtime.",
@@ -60,8 +70,8 @@
       "by": "groq"
     }
   ],
-  "linesRemoved": 128,
-  "bytesRemoved": 7508,
+  "linesRemoved": 123,
+  "bytesRemoved": 7274,
   "packagesRemoved": [
     "lodash",
     "moment",
@@ -82,8 +92,8 @@
       "src/styles/app.css",
       "src/main.js",
       "src/components/ProductList.js",
-      "src/components/Cart.js",
       "src/components/Checkout.js",
+      "src/components/Cart.js",
       "src/lib/cart-store.js",
       "src/lib/theme.js",
       "src/lib/products.js",
@@ -94,13 +104,13 @@
       "index.html",
       "src/styles/app.css",
       "src/main.js",
-      "src/components/ProductList.js",
       "src/components/Cart.js",
+      "src/components/ProductList.js",
       "src/components/Checkout.js",
-      "src/lib/cart-store.js",
       "src/lib/theme.js",
-      "src/lib/format.js",
+      "src/lib/cart-store.js",
       "src/lib/products.js",
+      "src/lib/format.js",
       "src/themes/light.js"
     ],
     "checkout": [
@@ -112,18 +122,18 @@
       "src/components/Checkout.js",
       "src/lib/cart-store.js",
       "src/lib/theme.js",
-      "src/lib/format.js",
       "src/lib/products.js",
+      "src/lib/format.js",
       "src/themes/light.js",
       "src/promos/welcome10.js"
     ]
   },
-  "kaneRuns": 14,
-  "replays": 14,
+  "kaneRuns": 24,
+  "replays": 24,
   "credits": 0,
   "trials": [
     {
-      "size": 23,
+      "size": 21,
       "ok": true,
       "set": [
         "file:public/img/hero-1.png",
@@ -140,9 +150,7 @@
         "file:src/lib/validators-copy.js",
         "file:src/lib/validators.js",
         "file:src/pages/admin-draft.js",
-        "file:src/promos/blackfriday.js",
         "file:src/styles/unused-theme.css",
-        "file:src/themes/dark.js",
         "pkg:lodash",
         "pkg:moment",
         "pkg:axios",
@@ -192,16 +200,16 @@
         "file:src/lib/validators-copy.js",
         "file:src/lib/validators.js",
         "file:src/pages/admin-draft.js",
-        "file:src/promos/blackfriday.js",
         "file:src/styles/unused-theme.css",
-        "file:src/themes/dark.js",
         "pkg:lodash",
         "pkg:moment",
         "pkg:axios",
         "pkg:jquery",
         "pkg:uuid",
         "pkg:classnames",
+        "file:src/promos/blackfriday.js",
         "file:src/promos/welcome10.js",
+        "file:src/themes/dark.js",
         "file:src/themes/light.js"
       ],
       "journeys": [
@@ -215,7 +223,7 @@
       ]
     },
     {
-      "size": 24,
+      "size": 23,
       "ok": false,
       "set": [
         "file:public/img/hero-1.png",
@@ -232,15 +240,117 @@
         "file:src/lib/validators-copy.js",
         "file:src/lib/validators.js",
         "file:src/pages/admin-draft.js",
-        "file:src/promos/blackfriday.js",
         "file:src/styles/unused-theme.css",
-        "file:src/themes/dark.js",
         "pkg:lodash",
         "pkg:moment",
         "pkg:axios",
         "pkg:jquery",
         "pkg:uuid",
         "pkg:classnames",
+        "file:src/promos/blackfriday.js",
+        "file:src/promos/welcome10.js"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "cart",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "checkout",
+          "ok": false,
+          "failedStep": "the page says the order is confirmed and that it charged $6.08 with WELCOME10",
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    },
+    {
+      "size": 22,
+      "ok": true,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/styles/unused-theme.css",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames",
+        "file:src/promos/blackfriday.js"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "cart",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "checkout",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    },
+    {
+      "size": 23,
+      "ok": false,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/styles/unused-theme.css",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames",
+        "file:src/promos/blackfriday.js",
         "file:src/promos/welcome10.js"
       ],
       "journeys": [
@@ -285,15 +395,106 @@
         "file:src/lib/validators-copy.js",
         "file:src/lib/validators.js",
         "file:src/pages/admin-draft.js",
-        "file:src/promos/blackfriday.js",
         "file:src/styles/unused-theme.css",
-        "file:src/themes/dark.js",
         "pkg:lodash",
         "pkg:moment",
         "pkg:axios",
         "pkg:jquery",
         "pkg:uuid",
         "pkg:classnames",
+        "file:src/promos/blackfriday.js",
+        "file:src/themes/dark.js",
+        "file:src/themes/light.js"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": false,
+          "failedStep": "Clicking Wildflower honey to open its page",
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    },
+    {
+      "size": 23,
+      "ok": true,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/styles/unused-theme.css",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames",
+        "file:src/promos/blackfriday.js",
+        "file:src/themes/dark.js"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "cart",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "checkout",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    },
+    {
+      "size": 24,
+      "ok": false,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/styles/unused-theme.css",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames",
+        "file:src/promos/blackfriday.js",
+        "file:src/themes/dark.js",
         "file:src/themes/light.js"
       ],
       "journeys": [
@@ -315,7 +516,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/fda1e8bb-ed9c-43a0-b7cb-d283b71eca22/evidence/e3fe2fb6-f4d3-473d-8a79-7e4d11ecb5eb.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/6484bba8-8c2a-4cd5-8095-fa4bb7b19cf6/evidence/77020e94-883b-4c2d-a493-34226f0f733d.evidence"
     },
     {
       "journey": "cart",
@@ -324,7 +525,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/707efd5b-d534-4da7-8792-5157dbe61cab/evidence/ec4745bf-3cc1-42a3-a28f-d3788c188fdd.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/0c50247d-c88b-4452-8024-7b1588188924/evidence/3b472fc0-23ee-4706-9c7a-c78ccadfe382.evidence"
     },
     {
       "journey": "checkout",
@@ -333,7 +534,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/ffd6432b-a01a-4352-82cc-e124e96b13a9/evidence/48fd0076-1f53-40ac-a6b0-f4f800589577.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/2258539b-697b-4677-8eef-1d0dca763e2a/evidence/f48849a6-7236-4fde-a00a-9b216d76ba85.evidence"
     },
     {
       "journey": "browse",
@@ -342,7 +543,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/17da2c00-e1a2-4b78-a79b-2bb7bcfa75f0/evidence/2f9f91d4-8069-44e5-bda7-5285dc3d9700.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/9608bff4-a18d-4386-9565-7a1e90d85720/evidence/ce401060-39f9-43a4-8c6c-1c8820490b3f.evidence"
     },
     {
       "journey": "cart",
@@ -351,7 +552,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/9f299bb5-3272-4838-8472-7b047fd3041d/evidence/b422a62c-179f-4bfe-94c6-238655e3480a.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/4bfa75db-00a0-4086-b8ac-6a4a1fa795ed/evidence/c426e26f-3c2b-412c-914d-ff023f08f8b9.evidence"
     },
     {
       "journey": "checkout",
@@ -360,7 +561,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/d9545149-0814-42a3-84e7-2950a812394c/evidence/0bbc399a-d332-431a-bb84-364ce881a93d.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/892061f0-fdcd-42ee-8b2b-20cb806ffc31/evidence/6eca72d0-22ce-4eab-b93a-9bd23e85b974.evidence"
     },
     {
       "journey": "browse",
@@ -369,7 +570,7 @@
       "failedStep": "Clicking Wildflower honey to open its page",
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/c1679404-7142-4967-8cdf-cde07b29ce42/evidence/359853fe-80eb-41b5-8ecb-e00ae9ab743b.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/833c0b0d-79e0-4a7c-8f3c-53eeb4c7b97b/evidence/fe0bf2fb-a143-478a-9167-3da460d8f3b6.evidence"
     },
     {
       "journey": "browse",
@@ -378,7 +579,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/04661e12-ec17-4b22-b250-686163251d2b/evidence/6021b401-2993-4d0a-a1e4-06816819a0d3.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/ba203daa-0514-4df7-a040-33d8821caf93/evidence/df2253dd-f4d6-43e1-893e-9e5a4677a00f.evidence"
     },
     {
       "journey": "cart",
@@ -387,7 +588,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/02fbf3de-5973-4796-bcb0-a8b6d35b34be/evidence/086303c3-880b-4a47-aef3-bbef0cfc7f45.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/c333cc16-8731-42ec-8a3f-b23bae30df76/evidence/e39242a3-bea8-4146-bbcc-05817e378d30.evidence"
     },
     {
       "journey": "checkout",
@@ -396,16 +597,106 @@
       "failedStep": "the page says the order is confirmed and that it charged $6.08 with WELCOME10",
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/bf9f0763-ef3b-45fc-ab4d-75a883f6db67/evidence/caadee0f-a8f1-4693-89e2-635e73617f88.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/2d1f26b2-d579-4a92-8a5d-6d31435cdc85/evidence/7f6e61a2-0768-425b-bfd2-60a64d881be2.evidence"
     },
     {
       "journey": "browse",
       "label": "trial 4",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/897c8e1a-39f4-4798-872a-fb6d3ecd9141/evidence/e0ad9766-715e-44a0-aa15-5bf3c1ed0d4f.evidence"
+    },
+    {
+      "journey": "cart",
+      "label": "trial 4",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/05103875-25ce-4093-b17a-62c07f3f5d8f/evidence/cf01dc69-5eab-4d02-9781-fb9b61107478.evidence"
+    },
+    {
+      "journey": "checkout",
+      "label": "trial 4",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/e09c37d9-244f-4f29-8345-6a833ea3b6a6/evidence/49a41dff-728a-4245-9c60-a4d51ee94efe.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 5",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/b89d34b3-d27e-47b2-8800-20632111fb85/evidence/b6c5c4d6-73dc-4620-9052-7e4f88cfe409.evidence"
+    },
+    {
+      "journey": "cart",
+      "label": "trial 5",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/5c64780f-fb5e-4845-90ff-2161ecfdb633/evidence/c6c59024-eb8b-4efb-ab82-7464ecf9afef.evidence"
+    },
+    {
+      "journey": "checkout",
+      "label": "trial 5",
+      "ok": false,
+      "failedStep": "the page says the order is confirmed and that it charged $6.08 with WELCOME10",
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/b391eada-5e2d-4752-9385-7042309e2404/evidence/10bdc9ed-c051-489b-af19-f23e7bb534c0.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 6",
       "ok": false,
       "failedStep": "Clicking Wildflower honey to open its page",
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/ca1cd047-85f7-4568-b986-38ff2fdacea6/evidence/60b34e4d-280c-4858-8206-642793ba065d.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/534c0c59-c068-4e79-bd53-c8457c18d042/evidence/bf8464e0-31d0-4075-837f-837e5d95aa93.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 7",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/af03d6a1-d2c8-4505-a823-f953d740fd46/evidence/fc2c222a-17c8-42db-9470-fe04cf858ea6.evidence"
+    },
+    {
+      "journey": "cart",
+      "label": "trial 7",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/52ddcea8-1e5a-4dd8-895a-8873d2439ace/evidence/6a9efb27-ca6b-4456-a1c7-8779dd719691.evidence"
+    },
+    {
+      "journey": "checkout",
+      "label": "trial 7",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/a60a26c8-2cae-406b-9c3f-78f26a21e23a/evidence/af6f7a63-3e71-4584-a643-2a451c7b589c.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 8",
+      "ok": false,
+      "failedStep": "Clicking Wildflower honey to open its page",
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/f180d8f3-5eb7-4e1f-98b9-9c9ee4415e86/evidence/3845482b-a831-424d-9f51-704d5b4e2c76.evidence"
     },
     {
       "journey": "browse",
@@ -414,7 +705,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/29c7b845-60b0-4175-9a48-dffe2dbb3237/evidence/dd24b079-486b-47ba-9fd1-f629306bba69.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/42e8f305-4d35-4465-a717-7a32a469ce35/evidence/c356d68d-c48f-4cc2-aaf5-b55154a22684.evidence"
     },
     {
       "journey": "cart",
@@ -423,7 +714,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/81cb876d-05c8-409d-a331-69ab1b6f01f9/evidence/e723eb57-6f80-44fb-8168-6f4190114a7a.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/baa7015b-ab8a-4f39-91b1-e65ea77fb9a1/evidence/e13d2812-a4c2-43fe-a912-dc5983e9672c.evidence"
     },
     {
       "journey": "checkout",
@@ -432,7 +723,7 @@
       "failedStep": null,
       "replayed": 1,
       "credits": 0,
-      "evidence": "/home/imprint/.testmuai/kaneai/sessions/47a71873-1568-4ee1-9cf4-7c9a3b32c6cc/evidence/47b87b71-88c6-4caa-b2bf-7b45a7ead861.evidence"
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/19053071-7205-42b7-be62-ab1037d9c9e2/evidence/1ff7ea42-8456-4767-8d69-b35a695f934f.evidence"
     }
   ],
   "allFiles": [
