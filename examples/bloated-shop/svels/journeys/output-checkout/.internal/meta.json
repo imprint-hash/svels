@@ -1,0 +1,81 @@
+{
+  "test_id": "36a4fd9d-55aa-4edb-9aae-596250b564ff",
+  "project_id": "01M7PQXC4E9MA0FPN93B62ZB78",
+  "folder_id": "01M7PQXD4C5R96RTZBJYPRCFE6",
+  "org_id": "3438805",
+  "session_name": "checkout",
+  "commit_id": "4391eeef-e2b7-4282-a94d-efec33e7e256",
+  "testcase_id": "01M7PSWCSTDENBH2WNH0SPDP8Z",
+  "executions": [
+    {
+      "execution_id": "bcde64f6-d966-469a-a46d-8fb39dcece87",
+      "run_kind": "author",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-18T07:49:07.857Z"
+    },
+    {
+      "execution_id": "a9976cc2-00e0-4d5e-a081-c2d429d0b2d4",
+      "run_kind": "replay",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-18T07:50:41.484Z"
+    },
+    {
+      "execution_id": "51a7d6ed-e220-4433-95c1-25a7a09a2277",
+      "run_kind": "replay",
+      "status": "broken",
+      "valid": true,
+      "at": "2026-11-18T07:52:55.118Z"
+    },
+    {
+      "execution_id": "eb0998cb-2b75-439e-ba89-39384bbf00a6",
+      "run_kind": "replay",
+      "status": "broken",
+      "valid": true,
+      "at": "2026-11-18T07:53:56.909Z"
+    },
+    {
+      "execution_id": "7fcd2e99-6baa-4e5a-9434-a06dc1a8d8ab",
+      "run_kind": "replay",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-18T07:55:33.613Z"
+    },
+    {
+      "execution_id": "48fd0076-1f53-40ac-a6b0-f4f800589577",
+      "run_kind": "replay",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-18T07:57:44.005Z"
+    },
+    {
+      "execution_id": "0bbc399a-d332-431a-bb84-364ce881a93d",
+      "run_kind": "replay",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-18T07:58:53.836Z"
+    },
+    {
+      "execution_id": "97715b0b-bbd8-4675-8092-94ae5ac54bb0",
+      "run_kind": "replay",
+      "status": "broken",
+      "valid": true,
+      "at": "2026-11-18T08:01:08.593Z"
+    },
+    {
+      "execution_id": "caadee0f-a8f1-4693-89e2-635e73617f88",
+      "run_kind": "replay",
+      "status": "broken",
+      "valid": true,
+      "at": "2026-11-18T08:02:24.708Z"
+    },
+    {
+      "execution_id": "47b87b71-88c6-4caa-b2bf-7b45a7ead861",
+      "run_kind": "replay",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-18T08:04:13.494Z"
+    }
+  ]
+}

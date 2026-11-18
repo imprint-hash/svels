@@ -1,0 +1,490 @@
+{
+  "project": "bloated-shop",
+  "at": "2026-11-18T08:04:20.240Z",
+  "seconds": 480,
+  "candidates": 25,
+  "removed": [
+    "file:public/img/hero-1.png",
+    "file:public/img/hero-2.png",
+    "file:src/components/Carousel.js",
+    "file:src/components/CartV2.js",
+    "file:src/components/Modal.js",
+    "file:src/components/Newsletter.js",
+    "file:src/components/OldCart.js",
+    "file:src/legacy/checkout-legacy.js",
+    "file:src/lib/analytics-old.js",
+    "file:src/lib/date-utils.js",
+    "file:src/lib/helpers.js",
+    "file:src/lib/validators-copy.js",
+    "file:src/lib/validators.js",
+    "file:src/pages/admin-draft.js",
+    "file:src/promos/blackfriday.js",
+    "file:src/styles/unused-theme.css",
+    "file:src/themes/dark.js",
+    "pkg:lodash",
+    "pkg:moment",
+    "pkg:axios",
+    "pkg:jquery",
+    "pkg:uuid",
+    "pkg:classnames"
+  ],
+  "kept": [
+    {
+      "item": "file:src/promos/welcome10.js",
+      "failures": [
+        {
+          "journey": "checkout",
+          "failedStep": "the page says the order is confirmed and that it charged $6.08 with WELCOME10",
+          "triage": "The replay correctly entered WELCOME10, but the live checkout rejected it, so the recorded expected charge and confirmation can no longer occur.",
+          "resultMd": "/home/imprint/svels/examples/bloated-shop/svels/journeys/output-checkout/Result.md",
+          "evidence": "/home/imprint/.testmuai/kaneai/sessions/bf9f0763-ef3b-45fc-ab4d-75a883f6db67/evidence/caadee0f-a8f1-4693-89e2-635e73617f88.evidence"
+        }
+      ],
+      "why": "The checkout page dynamically imports promos using a variable‑based import(`../promos/${data.promo.toLowerCase()}.js`), so the file must exist at runtime.",
+      "keep_rule": "src/promos/**/*.js",
+      "by": "groq"
+    },
+    {
+      "item": "file:src/themes/light.js",
+      "failures": [
+        {
+          "journey": "browse",
+          "failedStep": "Clicking Wildflower honey to open its page",
+          "triage": "The storefront cannot load the product list because a required theme file is missing.",
+          "resultMd": "/home/imprint/svels/examples/bloated-shop/svels/journeys/output-browse/Result.md",
+          "evidence": "/home/imprint/.testmuai/kaneai/sessions/ca1cd047-85f7-4568-b986-38ff2fdacea6/evidence/60b34e4d-280c-4858-8206-642793ba065d.evidence"
+        }
+      ],
+      "why": "The app dynamically imports theme modules by name, so src/themes/light.js is required at runtime.",
+      "keep_rule": "src/themes/**/*.js",
+      "by": "groq"
+    }
+  ],
+  "linesRemoved": 128,
+  "bytesRemoved": 7508,
+  "packagesRemoved": [
+    "lodash",
+    "moment",
+    "axios",
+    "jquery",
+    "uuid",
+    "classnames"
+  ],
+  "finalPassed": true,
+  "journeys": [
+    "browse",
+    "cart",
+    "checkout"
+  ],
+  "journeyMap": {
+    "browse": [
+      "index.html",
+      "src/styles/app.css",
+      "src/main.js",
+      "src/components/ProductList.js",
+      "src/components/Cart.js",
+      "src/components/Checkout.js",
+      "src/lib/cart-store.js",
+      "src/lib/theme.js",
+      "src/lib/products.js",
+      "src/lib/format.js",
+      "src/themes/light.js"
+    ],
+    "cart": [
+      "index.html",
+      "src/styles/app.css",
+      "src/main.js",
+      "src/components/ProductList.js",
+      "src/components/Cart.js",
+      "src/components/Checkout.js",
+      "src/lib/cart-store.js",
+      "src/lib/theme.js",
+      "src/lib/format.js",
+      "src/lib/products.js",
+      "src/themes/light.js"
+    ],
+    "checkout": [
+      "index.html",
+      "src/styles/app.css",
+      "src/main.js",
+      "src/components/ProductList.js",
+      "src/components/Cart.js",
+      "src/components/Checkout.js",
+      "src/lib/cart-store.js",
+      "src/lib/theme.js",
+      "src/lib/format.js",
+      "src/lib/products.js",
+      "src/themes/light.js",
+      "src/promos/welcome10.js"
+    ]
+  },
+  "kaneRuns": 14,
+  "replays": 14,
+  "credits": 0,
+  "trials": [
+    {
+      "size": 23,
+      "ok": true,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/promos/blackfriday.js",
+        "file:src/styles/unused-theme.css",
+        "file:src/themes/dark.js",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "cart",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "checkout",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    },
+    {
+      "size": 25,
+      "ok": false,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/promos/blackfriday.js",
+        "file:src/styles/unused-theme.css",
+        "file:src/themes/dark.js",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames",
+        "file:src/promos/welcome10.js",
+        "file:src/themes/light.js"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": false,
+          "failedStep": "Clicking Wildflower honey to open its page",
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    },
+    {
+      "size": 24,
+      "ok": false,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/promos/blackfriday.js",
+        "file:src/styles/unused-theme.css",
+        "file:src/themes/dark.js",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames",
+        "file:src/promos/welcome10.js"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "cart",
+          "ok": true,
+          "failedStep": null,
+          "replayed": 1,
+          "credits": 0
+        },
+        {
+          "journey": "checkout",
+          "ok": false,
+          "failedStep": "the page says the order is confirmed and that it charged $6.08 with WELCOME10",
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    },
+    {
+      "size": 24,
+      "ok": false,
+      "set": [
+        "file:public/img/hero-1.png",
+        "file:public/img/hero-2.png",
+        "file:src/components/Carousel.js",
+        "file:src/components/CartV2.js",
+        "file:src/components/Modal.js",
+        "file:src/components/Newsletter.js",
+        "file:src/components/OldCart.js",
+        "file:src/legacy/checkout-legacy.js",
+        "file:src/lib/analytics-old.js",
+        "file:src/lib/date-utils.js",
+        "file:src/lib/helpers.js",
+        "file:src/lib/validators-copy.js",
+        "file:src/lib/validators.js",
+        "file:src/pages/admin-draft.js",
+        "file:src/promos/blackfriday.js",
+        "file:src/styles/unused-theme.css",
+        "file:src/themes/dark.js",
+        "pkg:lodash",
+        "pkg:moment",
+        "pkg:axios",
+        "pkg:jquery",
+        "pkg:uuid",
+        "pkg:classnames",
+        "file:src/themes/light.js"
+      ],
+      "journeys": [
+        {
+          "journey": "browse",
+          "ok": false,
+          "failedStep": "Clicking Wildflower honey to open its page",
+          "replayed": 1,
+          "credits": 0
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "journey": "browse",
+      "label": "baseline",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/fda1e8bb-ed9c-43a0-b7cb-d283b71eca22/evidence/e3fe2fb6-f4d3-473d-8a79-7e4d11ecb5eb.evidence"
+    },
+    {
+      "journey": "cart",
+      "label": "baseline",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/707efd5b-d534-4da7-8792-5157dbe61cab/evidence/ec4745bf-3cc1-42a3-a28f-d3788c188fdd.evidence"
+    },
+    {
+      "journey": "checkout",
+      "label": "baseline",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/ffd6432b-a01a-4352-82cc-e124e96b13a9/evidence/48fd0076-1f53-40ac-a6b0-f4f800589577.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 1",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/17da2c00-e1a2-4b78-a79b-2bb7bcfa75f0/evidence/2f9f91d4-8069-44e5-bda7-5285dc3d9700.evidence"
+    },
+    {
+      "journey": "cart",
+      "label": "trial 1",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/9f299bb5-3272-4838-8472-7b047fd3041d/evidence/b422a62c-179f-4bfe-94c6-238655e3480a.evidence"
+    },
+    {
+      "journey": "checkout",
+      "label": "trial 1",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/d9545149-0814-42a3-84e7-2950a812394c/evidence/0bbc399a-d332-431a-bb84-364ce881a93d.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 2",
+      "ok": false,
+      "failedStep": "Clicking Wildflower honey to open its page",
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/c1679404-7142-4967-8cdf-cde07b29ce42/evidence/359853fe-80eb-41b5-8ecb-e00ae9ab743b.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 3",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/04661e12-ec17-4b22-b250-686163251d2b/evidence/6021b401-2993-4d0a-a1e4-06816819a0d3.evidence"
+    },
+    {
+      "journey": "cart",
+      "label": "trial 3",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/02fbf3de-5973-4796-bcb0-a8b6d35b34be/evidence/086303c3-880b-4a47-aef3-bbef0cfc7f45.evidence"
+    },
+    {
+      "journey": "checkout",
+      "label": "trial 3",
+      "ok": false,
+      "failedStep": "the page says the order is confirmed and that it charged $6.08 with WELCOME10",
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/bf9f0763-ef3b-45fc-ab4d-75a883f6db67/evidence/caadee0f-a8f1-4693-89e2-635e73617f88.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "trial 4",
+      "ok": false,
+      "failedStep": "Clicking Wildflower honey to open its page",
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/ca1cd047-85f7-4568-b986-38ff2fdacea6/evidence/60b34e4d-280c-4858-8206-642793ba065d.evidence"
+    },
+    {
+      "journey": "browse",
+      "label": "final",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/29c7b845-60b0-4175-9a48-dffe2dbb3237/evidence/dd24b079-486b-47ba-9fd1-f629306bba69.evidence"
+    },
+    {
+      "journey": "cart",
+      "label": "final",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/81cb876d-05c8-409d-a331-69ab1b6f01f9/evidence/e723eb57-6f80-44fb-8168-6f4190114a7a.evidence"
+    },
+    {
+      "journey": "checkout",
+      "label": "final",
+      "ok": true,
+      "failedStep": null,
+      "replayed": 1,
+      "credits": 0,
+      "evidence": "/home/imprint/.testmuai/kaneai/sessions/47a71873-1568-4ee1-9cf4-7c9a3b32c6cc/evidence/47b87b71-88c6-4caa-b2bf-7b45a7ead861.evidence"
+    }
+  ],
+  "allFiles": [
+    "index.html",
+    "package.json",
+    "public/img/hero-1.png",
+    "public/img/hero-2.png",
+    "src/components/Carousel.js",
+    "src/components/Cart.js",
+    "src/components/CartV2.js",
+    "src/components/Checkout.js",
+    "src/components/Modal.js",
+    "src/components/Newsletter.js",
+    "src/components/OldCart.js",
+    "src/components/ProductList.js",
+    "src/legacy/checkout-legacy.js",
+    "src/lib/analytics-old.js",
+    "src/lib/cart-store.js",
+    "src/lib/date-utils.js",
+    "src/lib/format.js",
+    "src/lib/helpers.js",
+    "src/lib/products.js",
+    "src/lib/theme.js",
+    "src/lib/validators-copy.js",
+    "src/lib/validators.js",
+    "src/main.js",
+    "src/pages/admin-draft.js",
+    "src/promos/blackfriday.js",
+    "src/promos/welcome10.js",
+    "src/styles/app.css",
+    "src/styles/unused-theme.css",
+    "src/themes/dark.js",
+    "src/themes/light.js",
+    "svels/journeys/browse_test.md",
+    "svels/journeys/cart_test.md",
+    "svels/journeys/checkout_test.md",
+    "svels/journeys/output-browse/Result.md",
+    "svels/journeys/output-cart/Result.md",
+    "svels/journeys/output-checkout/Result.md",
+    "svels.config.json"
+  ],
+  "reachable": [
+    "index.html",
+    "src/styles/app.css",
+    "src/main.js",
+    "src/components/ProductList.js",
+    "src/components/Cart.js",
+    "src/components/Checkout.js",
+    "src/lib/cart-store.js",
+    "src/lib/theme.js",
+    "src/lib/products.js",
+    "src/lib/format.js"
+  ],
+  "applied": false
+}

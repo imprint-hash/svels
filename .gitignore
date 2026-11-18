@@ -3,3 +3,4 @@ node_modules/
 .env
 *.log
 .svels-run*.log
+examples/*/svels/journeys/.testmuai/

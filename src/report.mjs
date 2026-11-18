@@ -9,7 +9,7 @@ export function writeReport(svelsDir, s) {
   const removed = new Set(s.removed.filter((x) => x.startsWith("file:")).map((x) => x.slice(5)));
   const kept = new Map(s.kept.filter((k) => k.item.startsWith("file:")).map((k) => [k.item.slice(5), k]));
   const usedBy = (f) => Object.entries(s.journeyMap).filter(([, files]) => files.includes(f) || files.includes(f.replace(/^public\//, ""))).map(([j]) => j);
-  const files = s.allFiles.filter((f) => !f.startsWith(".svels/")).sort();
+  const files = s.allFiles.filter((f) => !f.startsWith(".svels/") && !/(^|\/)(output-[^/]+|\.testmuai)\//.test(f)).sort();
   const groups = {};
   for (const f of files) (groups[path.posix.dirname(f)] ||= []).push(f);
   const state = (f) => removed.has(f) ? "cut" : kept.has(f) ? "saved" : usedBy(f).length ? "walked" : s.reachable.includes(f) ? "linked" : "other";
