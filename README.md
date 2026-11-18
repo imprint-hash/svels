@@ -6,6 +6,12 @@ AI coding agents only ever *add* code. A few weeks in, every vibe-coded app is f
 
 Built for the **Kane CLI Online Hackathon** (TestMu AI, 12–19 Nov 2026).
 
+**In one minute:**
+- **Ships:** `svels run` works end to end. On the demo shop it cut 15 files, 6 packages and 26 lines inside used files; every journey still passes. It also ran on 4 real codebases nobody wrote for it, including a 40k-star repo where it found and Kane confirmed a dead stylesheet.
+- **Verified:** Kane CLI is the only judge of every cut. It caught 3 breaks a static dead-code scan would have shipped (a blank shop, a rejected promo code, a frozen cart badge), with Kane's own screenshots, triage and NDJSON in [`docs/evidence/`](docs/evidence/). On a real site of ours it caught a deletion that would have emptied a live dropdown.
+- **Closed loop:** the coding agent edits code, Kane replays the journeys, and a failure goes back to the agent with Kane's triage and where the code is still used. Real transcript: attempt 1 removed `badgeText`, Kane failed "the header shows Cart (1)", attempt 2 kept it and removed the 4 truly dead helpers, Kane passed. What Kane proves needed is remembered for the next run.
+- **Craft:** an agent that deletes code instead of adding it. Delta debugging keeps Kane runs small; Kane's cache makes re-runs free (34 of 34 runs replayed, 0 credits); files a green test can't vouch for (images, runtime-built paths) are never auto-deleted.
+
 ## The four criteria, with the evidence
 
 **Ships.** One command (`svels run`) on a real app: scan → Kane baseline → batched cuts → agent edits → final Kane check → report. On the demo shop it removed **15 files (123 lines), 6 packages and 26 lines inside 3 used files**, and every journey still passes. It also ran on **real code nobody wrote for it**: two of our own earlier apps, a 40k-star GitHub repo and a clean template ([results](#tested-on-real-code-not-just-our-demo)).
