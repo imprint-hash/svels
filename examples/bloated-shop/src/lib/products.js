@@ -5,3 +5,13 @@ export const products = [
   { id: "rice", name: "Jasmine rice", price: 6.75, unit: "2 kg bag", blurb: "Fragrant long-grain rice." },
 ];
 export const byId = (id) => products.find((p) => p.id === id);
+
+// Leftovers from a search box and a "featured" strip that were never built.
+export function searchProducts(q) {
+  const t = q.trim().toLowerCase();
+  return products.filter((p) => p.name.toLowerCase().includes(t) || p.blurb.toLowerCase().includes(t));
+}
+export const featured = () => products.filter((p) => p.price > 5);
+export function sortByPrice(list, dir = "asc") {
+  return [...list].sort((a, b) => (dir === "asc" ? a.price - b.price : b.price - a.price));
+}

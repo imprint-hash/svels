@@ -11,6 +11,8 @@ import { kaneBin, runJourney, listJourneys } from "./kane.mjs";
 import { freshCopy, applyRemovals, lineCount, byteSize } from "./workspace.mjs";
 import { explainNeeded } from "./agent.mjs";
 import { writeReport } from "./report.mjs";
+import { unusedExports } from "./exports.mjs";
+import { agentTrim } from "./trim.mjs";
 
 export function loadConfig(projectDir) {
   const p = path.join(projectDir, "svels.config.json");
@@ -70,27 +72,45 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     const runtimeSeen = candidates.filter((c) => c.startsWith("file:") && (loadedIn(c.slice(5)).length || inDynamic(c.slice(5))));
     const quiet = candidates.filter((c) => !runtimeSeen.includes(c));
     const trials = [];
-    const tryRemove = async (set) => {
+    let edits = {}; // agent edits inside files that Kane has accepted
+    const tryRemove = async (set, extraEdits = {}) => {
       freshCopy(projectDir, work); applyRemovals(work, set); server.setRoot(work);
+      for (const [f, c] of Object.entries({ ...edits, ...extraEdits })) fs.writeFileSync(path.join(work, f), c);
       log(`Trial ${trials.length + 1}: without ${set.length} item(s)`);
       const res = await runAll(`trial ${trials.length + 1}`, false);
       const ok = res.every((r) => r.ok);
       trials.push({ size: set.length, ok, set, journeys: res.map(({ journey, ok, failedStep, replayed, credits }) => ({ journey, ok, failedStep, replayed, credits })) });
       return { ok, evidence: res.filter((r) => !r.ok).map(({ journey, failedStep, triage, resultMd, evidence }) => ({ journey, failedStep, triage, resultMd, evidence })) };
     };
-    const a = await shrink(quiet, tryRemove);
+    // Memory from earlier runs: files Kane already proved are needed are not cut again.
+    const learnedPath = path.join(svelsDir, "learned.json");
+    const learned = fs.existsSync(learnedPath) ? JSON.parse(fs.readFileSync(learnedPath, "utf8")) : [];
+    const isLearned = (c) => learned.some((l) => l.item === c);
+    if (learned.length) log(`Memory: ${learned.length} file(s) Kane proved needed in an earlier run are kept without re-testing.`);
+    const a = await shrink(quiet.filter((c) => !isLearned(c)), tryRemove);
     // Files the browser really loaded are tried one at a time. If Kane fails, they're kept with proof.
     // If Kane still passes, they are NOT cut: Kane checks behaviour, not looks (an image or font can
     // vanish without failing a journey). They go on a review list instead.
-    const g = await shrink(runtimeSeen, async (set) => tryRemove([...a.accepted, ...set]));
+    const g = await shrink(runtimeSeen.filter((c) => !isLearned(c)), async (set) => tryRemove([...a.accepted, ...set]));
     const b = { needed: g.needed, review: g.accepted.map((item) => ({ item, journeys: loadedIn(item.slice(5)), dynamic: inDynamic(item.slice(5)) })) };
     const accepted = [...a.accepted], needed = [...a.needed, ...b.needed];
+    // Agent loop inside files: unused exports in files the app uses. The agent edits, Kane verifies,
+    // failures go back to the agent for a safer edit. Only Kane-passed edits stand.
+    const trims = [];
+    const targets = unusedExports(projectDir, graph).filter((t) => !accepted.includes("file:" + t.file));
+    if (targets.length) log(`Agent: ${targets.length} used file(s) still export things nothing imports.`);
+    for (const t of targets) {
+      const r = await agentTrim(projectDir, t, (newEdits) => tryRemove(accepted, newEdits), log);
+      if (r.accepted) edits = { ...edits, [r.file]: r.content };
+      trims.push({ ...r, unused: t.unused, content: undefined });
+    }
     // Closed loop: Kane's failures go to the agent, which explains each kept file and proposes a keep rule.
     const referencers = graph.reachable.filter((f) => /\.(m?js|ts|tsx|jsx)$/.test(f));
     for (const n of needed) n.explain = await explainNeeded(projectDir, n.item, n.evidence || [], { journeys: loadedIn(n.item.slice(5)), referencers });
     // Final confirmation run with every accepted cut applied together.
     freshCopy(projectDir, work); applyRemovals(work, accepted); server.setRoot(work);
-    log(`Final check: all ${accepted.length} cuts together.`);
+    for (const [f, c] of Object.entries(edits)) fs.writeFileSync(path.join(work, f), c);
+    log(`Final check: all ${accepted.length} cuts and ${Object.keys(edits).length} agent edits together.`);
     const final = await runAll("final", false);
     const removedFiles = accepted.filter((x) => x.startsWith("file:")).map((x) => x.slice(5));
     const summary = {
@@ -103,10 +123,14 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
       kaneRuns: runs.length, replays: runs.filter((r) => r.replayed).length, credits: Math.round(credits * 100) / 100,
       trials, runs: runs.map(({ journey, label, ok, failedStep, replayed, credits, evidence }) => ({ journey, label, ok, failedStep, replayed, credits, evidence })),
       allFiles: graph.files, reachable: graph.reachable, applied: false,
+      trims, linesTrimmed: trims.filter((t) => t.accepted).reduce((n, t) => n + t.linesRemoved, 0),
+      learned: learned.length,
     };
-    if (apply && summary.finalPassed) { applyRemovals(projectDir, accepted); summary.applied = true; }
+    const newLearned = [...learned, ...needed.filter((n) => !isLearned(n.item)).map((n) => ({ item: n.item, why: n.explain?.why, keep_rule: n.explain?.keep_rule, at: new Date().toISOString() }))];
+    fs.writeFileSync(learnedPath, JSON.stringify(newLearned, null, 2));
+    if (apply && summary.finalPassed) { applyRemovals(projectDir, accepted); for (const [f, c] of Object.entries(edits)) fs.writeFileSync(path.join(projectDir, f), c); summary.applied = true; }
     const out = writeReport(svelsDir, summary);
-    log(`\nRemoved ${removedFiles.length} files (${summary.linesRemoved} lines) and ${summary.packagesRemoved.length} packages. Kept ${needed.length} that Kane proved are needed.`);
+    log(`\nRemoved ${removedFiles.length} files (${summary.linesRemoved} lines), trimmed ${summary.linesTrimmed} lines inside ${trims.filter((t) => t.accepted).length} used files, and dropped ${summary.packagesRemoved.length} packages. Kept ${needed.length} that Kane proved are needed.`);
     log(`Final check: ${summary.finalPassed ? "all journeys pass" : "FAILED, nothing applied"}. Kane runs: ${summary.kaneRuns} (${summary.replays} replayed free). Report: ${out}`);
     return summary;
   } finally { rec.close(); await server.close(); chrome.stop(); fs.rmSync(work, { recursive: true, force: true }); }
