@@ -11,7 +11,17 @@ export function kaneBin(projectDir) {
   return process.env.SVELS_KANE || local || "kane-cli";
 }
 
-export function runJourney(bin, file, { cdp, heal = false, timeout = 300, logDir = null }) {
+export async function runJourney(bin, file, opts) {
+  const r = await runJourneyOnce(bin, file, opts);
+  // Kane recordings belong to the account that authored them. On someone else's account, start fresh.
+  if (opts.heal && r.foreignRecording) {
+    fs.rmSync(path.join(path.dirname(file), `output-${r.journey}`), { recursive: true, force: true });
+    return runJourneyOnce(bin, file, opts);
+  }
+  return r;
+}
+
+function runJourneyOnce(bin, file, { cdp, heal = false, timeout = 300, logDir = null }) {
   const args = ["testmd", "run", file, "--cdp-endpoint", cdp, "--agent", "--timeout", String(timeout)];
   if (!heal) args.push("--no-adaptive-heal");
   return new Promise((resolve) => {
@@ -39,7 +49,7 @@ export function runJourney(bin, file, { cdp, heal = false, timeout = 300, logDir
       if (logDir) { fs.mkdirSync(logDir, { recursive: true }); fs.writeFileSync(path.join(logDir, `${Date.now()}-${stem}.ndjson`), out); }
       resolve({ journey: stem, ok: summary?.overall_status === "passed", status: summary?.overall_status || "error",
         steps: summary?.steps || null, replayed: summary?.steps?.replay_decisions || 0, credits: Math.round(credits * 1000) / 1000,
-        failedStep, automationBug, triage: verdict?.one_liner || null, evidence, resultMd: fs.existsSync(resultMd) ? resultMd : null, raw: summary ? null : out.slice(-600) });
+        failedStep, automationBug, foreignRecording: /belongs to org/.test(out), triage: verdict?.one_liner || null, evidence, resultMd: fs.existsSync(resultMd) ? resultMd : null, raw: summary ? null : out.slice(-600) });
     });
   });
 }

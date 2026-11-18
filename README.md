@@ -20,6 +20,8 @@ npm run scan                      # what looks unused in the demo shop (no Kane,
 SVELS_CHROME=$(which google-chrome) npm run demo   # the full loop, writes examples/bloated-shop/.svels/report.html
 ```
 
+The repo ships Kane's recordings of the three demo journeys, but recordings belong to the account that made them, so on your account Svels has Kane learn them fresh on the first run (about 65 Kane credits, once). Every trial after that replays from Kane's cache for free. No account handy? Open [`docs/sample-report.html`](docs/sample-report.html) for the report from our run.
+
 What you'll see on the demo shop (`examples/bloated-shop`, a small store built quickly with an AI agent):
 
 | | |
@@ -28,7 +30,7 @@ What you'll see on the demo shop (`examples/bloated-shop`, a small store built q
 | Cut, with every journey still passing | **17 files (128 lines) and 6 packages** (lodash, moment, axios, jquery, uuid, classnames) |
 | Kept, because **Kane caught a break** | **2**: `src/themes/light.js` (browse broke) and `src/promos/welcome10.js` (checkout broke) |
 | Trials needed | **4**, thanks to batched cutting |
-| Kane runs | 14, of which **11 replayed from Kane's cache for free** |
+| Kane runs | 14 per full run; on our second run **all 14 replayed from Kane's cache: 0 credits** |
 
 The two saves are the point. Both files are loaded by a computed path (`import(\`../themes/${name}.js\`)`, `import(\`../promos/${code}.js\`)`), so every static "dead code" tool would delete them. Kane catches it in the browser, the cut is undone, and the agent writes down why:
 
