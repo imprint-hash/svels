@@ -7,14 +7,28 @@ AI coding agents only ever *add* code. A few weeks in, every vibe-coded app is f
 Built for the **Kane CLI Online Hackathon** (TestMu AI, 12–19 Nov 2026).
 
 **In one minute:**
-- **Ships:** `svels run` works end to end. On the demo shop it cut 15 files, 6 packages and 26 lines inside used files; every journey still passes. It also ran on 4 real codebases nobody wrote for it, including a 40k-star repo where it found and Kane confirmed a dead stylesheet.
+- **Ships:** `svels run` works end to end on real code nobody wrote for it. On AdminLTE (45k stars, 2,428 files) it cut 1,724 unused files (about 34 MB) in one trial while Kane confirmed four real pages still work; on a 40k-star repo it found a dead stylesheet Kane confirmed. On our demo shop it cut 15 files, 6 packages and 26 lines inside used files; every journey still passes.
 - **Verified:** Kane CLI is the only judge of every cut. It caught 3 breaks a static dead-code scan would have shipped (a blank shop, a rejected promo code, a frozen cart badge), with Kane's own screenshots, triage and NDJSON in [`docs/evidence/`](docs/evidence/). On a real site of ours it caught a deletion that would have emptied a live dropdown.
 - **Closed loop:** the coding agent edits code, Kane replays the journeys, and a failure goes back to the agent with Kane's triage and where the code is still used. Real transcript: attempt 1 removed `badgeText`, Kane failed "the header shows Cart (1)", attempt 2 kept it and removed the 4 truly dead helpers, Kane passed. What Kane proves needed is remembered for the next run.
 - **Craft:** an agent that deletes code instead of adding it. Delta debugging keeps Kane runs small; Kane's cache makes re-runs free (34 of 34 runs replayed, 0 credits); files a green test can't vouch for (images, runtime-built paths) are never auto-deleted.
 
+## Tested on real code, not just our demo
+
+Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was written for Svels. (On AdminLTE the scanner checked all 70 pages and Kane walked 4 journeys; pages without a journey are covered by the scan only. Its `build/` sources and `package.json` were protected with `keep` and `"packages": false`, since they serve the project's build, not the site.)
+
+| Code | Looked unused | Cut (Kane-verified) | Kept: Kane caught a break | Guarded, not cut |
+|---|---|---|---|---|
+| **[AdminLTE v3](https://github.com/ColorlibHQ/AdminLTE/tree/v3)** (45k stars, 2,428 files, 70 pages) — the stress test | 1,724 | **1,724 files (603,861 lines, about 34 MB)** of plugin extras no page references: 536 flag images, 139 Moment.js locales, CodeMirror modes, Summernote and validation translations. All cut in **one trial**; Kane then walked the dashboard menu, a DataTables search, jQuery Validation and FullCalendar, and all four still worked | – | – |
+| **[bradtraversy/50projects50days](https://github.com/bradtraversy/50projects50days)** (40k stars, 52 apps, 167 files) | **1** | 1: `event-keycodes/dark-style.css`, referenced nowhere. Kane pressed "a" and still saw key code 65 | – | – |
+| **[StartBootstrap Agency](https://github.com/StartBootstrap/startbootstrap-agency)** (built site, 25 files) | **0** | – | – | – |
+| **Aisle**, a live hackathon site (ours, built before Svels) | 3 (first scanner version; it now reads paths in JavaScript strings, so today it flags only 1) | 1: `img/kite.svg`, an image the site stopped using | **1: `data/campaign.json`.** The page fetches it by URL; without it Kane saw the task dropdown lose "Lagos, Nigeria" | – |
+| **Parasol**, a 90-file web app (ours, built before Svels) | 42 | 1: an unused icon | – | **41.** Kane passed with all 41 removed (a missing picture doesn't fail a text check), but the app builds paths into `demo/`, `products/`, `scenes/` at runtime, so Svels refused |
+
+What the real runs taught Svels (each is now in the scanner): every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
+
 ## The four criteria, with the evidence
 
-**Ships.** One command (`svels run`) on a real app: scan → Kane baseline → batched cuts → agent edits → final Kane check → report. On the demo shop it removed **15 files (123 lines), 6 packages and 26 lines inside 3 used files**, and every journey still passes. It also ran on **real code nobody wrote for it**: two of our own earlier apps, a 40k-star GitHub repo, a clean template, and **AdminLTE (45k stars, 2,428 files), where it cut 1,724 unused plugin files in one trial while Kane confirmed four plugin-driven journeys still work** ([results](#tested-on-real-code-not-just-our-demo)).
+**Ships.** One command (`svels run`) on a real app: scan → Kane baseline → batched cuts → agent edits → final Kane check → report. On **real code nobody wrote for it**: **AdminLTE (45k stars, 2,428 files), where it cut 1,724 unused plugin files in one trial while Kane confirmed four plugin-driven journeys still work**, plus a 40k-star GitHub repo, a clean template and two of our own earlier apps ([results](#tested-on-real-code-not-just-our-demo)). On the demo shop it removed **15 files (123 lines), 6 packages and 26 lines inside 3 used files**, and every journey still passes.
 
 **Verified.** Kane caught three breaks that a static "dead code" scan would have shipped. Screenshots are from Kane's own browser at the moment it failed the cut; the raw NDJSON is in [`docs/evidence/`](docs/evidence/).
 
@@ -63,20 +77,6 @@ The demo shop (`examples/bloated-shop`) at a glance:
 | Kept, because Kane caught a break | **2 files** (`light.js`, `welcome10.js`) and **1 export** (`badgeText`) |
 | Not cut, left for you to review | **2**: `themes/dark.js`, `promos/blackfriday.js` (Kane passed, but the code builds paths into those folders at runtime) |
 | Kane runs | 34 per full run, **all replayed from cache once recorded (0 credits)** |
-
-## Tested on real code, not just our demo
-
-Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was written for Svels. (On AdminLTE the scanner checked all 70 pages and Kane walked 4 journeys; pages without a journey are covered by the scan only. Its `build/` sources and `package.json` were protected with `keep` and `"packages": false`, since they serve the project's build, not the site.)
-
-| Code | Looked unused | Cut (Kane-verified) | Kept: Kane caught a break | Guarded, not cut |
-|---|---|---|---|---|
-| **Aisle**, a live hackathon site (ours, built before Svels) | 3 (first scanner version; it now reads paths in JavaScript strings, so today it flags only 1) | 1: `img/kite.svg`, an image the site stopped using | **1: `data/campaign.json`.** The page fetches it by URL; without it Kane saw the task dropdown lose "Lagos, Nigeria" | – |
-| **Parasol**, a 90-file web app (ours, built before Svels) | 42 | 1: an unused icon | – | **41.** Kane passed with all 41 removed (a missing picture doesn't fail a text check), but the app builds paths into `demo/`, `products/`, `scenes/` at runtime, so Svels refused |
-| **[bradtraversy/50projects50days](https://github.com/bradtraversy/50projects50days)** (40k stars, 52 apps, 167 files) | **1** | 1: `event-keycodes/dark-style.css`, referenced nowhere. Kane pressed "a" and still saw key code 65 | – | – |
-| **[StartBootstrap Agency](https://github.com/StartBootstrap/startbootstrap-agency)** (built site, 25 files) | **0** | – | – | – |
-| **[AdminLTE v3](https://github.com/ColorlibHQ/AdminLTE/tree/v3)** (45k stars, 2,428 files, 70 pages) — the stress test | 1,724 | **1,724 files (603,861 lines, about 34 MB)** of plugin extras no page references: 536 flag images, 139 Moment.js locales, CodeMirror modes, Summernote and validation translations. All cut in **one trial**; Kane then walked the dashboard menu, a DataTables search, jQuery Validation and FullCalendar, and all four still worked | – | – |
-
-What the real runs taught Svels (each is now in the scanner): every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
 
 ## How it works
 
