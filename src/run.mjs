@@ -20,6 +20,13 @@ export function loadConfig(projectDir) {
   return { entries: ["index.html"], aliases: { "@": "src" }, port: 5180, journeys: "svels/journeys", keep: ["svels/"], ...c };
 }
 
+// Which candidates may be cut on Kane's word alone ("quiet"), and which are guarded: loaded by the
+// browser during a journey, or inside a folder the code builds paths into at runtime.
+export function partition(candidates, dynamicDirs, loadedIn) {
+  const guardedFile = (c) => c.startsWith("file:") && (loadedIn(c.slice(5)).length > 0 || dynamicDirs.some((d) => c.slice(5).startsWith(d)));
+  return { guarded: candidates.filter(guardedFile), quiet: candidates.filter((c) => !guardedFile(c)) };
+}
+
 export function scan(projectDir) {
   const cfg = loadConfig(projectDir);
   const g = buildGraph(projectDir, cfg);
@@ -69,8 +76,7 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     // "Guarded" candidates: loaded by the browser during a journey, or inside a folder the code builds
     // paths into at runtime. Kane can prove they're needed, but never that they're safe to delete.
     const inDynamic = (rel) => graph.dynamicDirs.some((d) => rel.startsWith(d));
-    const runtimeSeen = candidates.filter((c) => c.startsWith("file:") && (loadedIn(c.slice(5)).length || inDynamic(c.slice(5))));
-    const quiet = candidates.filter((c) => !runtimeSeen.includes(c));
+    const { guarded: runtimeSeen, quiet } = partition(candidates, graph.dynamicDirs, loadedIn);
     const trials = [];
     let edits = {}; // agent edits inside files that Kane has accepted
     const tryRemove = async (set, extraEdits = {}) => {
