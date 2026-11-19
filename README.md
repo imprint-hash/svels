@@ -121,6 +121,15 @@ Testing one file at a time would need one Kane run per candidate. Svels removes 
 
 Environment: `SVELS_CHROME` (a Chrome binary), `GROQ_API_KEY` or `GEMINI_API_KEY` for the agent's explanations (both have free tiers; without a key Svels writes a plain fallback explanation).
 
+## Trust model: what you have to trust, and what you can check yourself
+
+| Claim | Check it yourself | What you still have to trust |
+|---|---|---|
+| A cut was safe | Svels never decides that itself: every keep-or-undo is Kane CLI's verdict. The raw NDJSON of every Kane run is written to `.svels/kane-logs/`, and the failures shown above are in [`docs/evidence/`](docs/evidence/) with Kane's own screenshots | That your journeys cover the flows you care about. Svels guarantees *those* journeys still pass, nothing more |
+| Nothing changed behind your back | `svels run` is a dry run: it works on a temporary copy and writes only a report. `--apply` writes the proven cuts, and only if the final Kane check with every cut together passed; review them with `git diff` | Nothing: it's your working tree and your git history |
+| The agent's edits are safe | An agent edit stands only if Kane replays every journey and passes; a failed edit is thrown away. The report lists every attempt and Kane's verdict | That a passing journey is enough for that file. Anything a journey can't vouch for (images, fonts, files in folders the code builds paths into at runtime) is never auto-deleted |
+| Your code stays private | Svels reads and serves your app locally. The only code that leaves your machine is a file the agent is asked to edit, sent to the model you configure (Groq or Gemini) | That model provider. Leave both keys unset and Svels makes no agent edits at all |
+
 ## Honest limits
 
 - **Svels is only as safe as your journeys.** It guarantees the journeys you wrote still pass; code used only by flows you didn't write a journey for can be cut. The report lists exactly which journeys covered which files.
