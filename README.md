@@ -47,6 +47,7 @@ File cuts loop the same way: a batch Kane fails is split and retried, a file Kan
 git clone https://github.com/imprint-hash/svels && cd svels
 npm install                       # installs Kane CLI (@testmuai/kane-cli)
 npx kane-cli login                # your TestMu account
+npm test                          # 33 tests: scanner, Kane NDJSON parsing on real captured output, safety rules, agent loop
 npm run scan                      # what looks unused in the demo shop (no Kane, instant)
 SVELS_CHROME=$(which google-chrome) GROQ_API_KEY=... npm run demo   # the full loop -> examples/bloated-shop/.svels/report.html
 ```
