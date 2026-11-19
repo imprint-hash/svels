@@ -99,10 +99,11 @@ export function buildGraph(root, opts = {}) {
   const isKept = (f) => keep.some((k) => f === k || f.startsWith(k.replace(/\/?$/, "/")));
   // Only files a browser could load count as candidates; docs, configs and build sources are left alone.
   const servable = /\.(m?js|cjs|jsx|tsx?|css|html?|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|otf|eot|json)$/i;
-  const notTooling = (f) => !/(^|\/)(package(-lock)?\.json|svels\.config\.json|tsconfig[^/]*\.json|vercel\.json|manifest\.json|robots\.txt)$/i.test(f) && !/(^|\/)(output-[^/]+|\.testmuai|test|tests|__tests__|scripts|api|docs)\//.test(f);
+  const isConfig = (f) => path.posix.basename(f).startsWith(".") || /^(composer\.json|[\w.-]*\.config\.(m?js|cjs|json|ts)|tsconfig[\w.-]*\.json|jsconfig\.json)$/i.test(path.posix.basename(f)) || f.split("/").some((seg) => seg.startsWith(".") && seg.length > 1);
+  const notTooling = (f) => !isConfig(f) && !/(^|\/)(package(-lock)?\.json|svels\.config\.json|tsconfig[^/]*\.json|vercel\.json|manifest\.json|robots\.txt)$/i.test(f) && !/(^|\/)(output-[^/]+|\.testmuai|test|tests|__tests__|scripts|api|docs)\//.test(f);
   const roots = (opts.roots || []).map((r) => r.replace(/\/?$/, "/"));
   const inRoots = (f) => !roots.length || roots.some((r) => f.startsWith(r));
   const unreachableFiles = files.filter((f) => !seen.has(f) && !isKept(f) && inRoots(f) && servable.test(f) && notTooling(f));
-  const unusedPkgs = declared.filter((d) => !usedPkgs[d] && !keep.includes(d));
+  const unusedPkgs = opts.packages === false ? [] : declared.filter((d) => !usedPkgs[d] && !keep.includes(d)); // packages:false when package.json serves build tooling, not the site
   return { files, reachable: [...seen], edges, usedPkgs, unreachableFiles, unusedPkgs, dynamicDirs: [...dynamicDirs] };
 }
