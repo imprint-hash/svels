@@ -14,7 +14,7 @@ Built for the **Kane CLI Online Hackathon** (TestMu AI, 12–19 Nov 2026).
 
 ## The four criteria, with the evidence
 
-**Ships.** One command (`svels run`) on a real app: scan → Kane baseline → batched cuts → agent edits → final Kane check → report. On the demo shop it removed **15 files (123 lines), 6 packages and 26 lines inside 3 used files**, and every journey still passes. It also ran on **real code nobody wrote for it**: two of our own earlier apps, a 40k-star GitHub repo and a clean template ([results](#tested-on-real-code-not-just-our-demo)).
+**Ships.** One command (`svels run`) on a real app: scan → Kane baseline → batched cuts → agent edits → final Kane check → report. On the demo shop it removed **15 files (123 lines), 6 packages and 26 lines inside 3 used files**, and every journey still passes. It also ran on **real code nobody wrote for it**: two of our own earlier apps, a 40k-star GitHub repo, a clean template, and **AdminLTE (45k stars, 2,428 files), where it cut 1,724 unused plugin files in one trial while Kane confirmed four plugin-driven journeys still work** ([results](#tested-on-real-code-not-just-our-demo)).
 
 **Verified.** Kane caught three breaks that a static "dead code" scan would have shipped. Screenshots are from Kane's own browser at the moment it failed the cut; the raw NDJSON is in [`docs/evidence/`](docs/evidence/).
 
@@ -66,7 +66,7 @@ The demo shop (`examples/bloated-shop`) at a glance:
 
 ## Tested on real code, not just our demo
 
-Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was written for Svels.
+Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was written for Svels. (On AdminLTE the scanner checked all 70 pages and Kane walked 4 journeys; pages without a journey are covered by the scan only. Its `build/` sources and `package.json` were protected with `keep` and `"packages": false`, since they serve the project's build, not the site.)
 
 | Code | Looked unused | Cut (Kane-verified) | Kept: Kane caught a break | Guarded, not cut |
 |---|---|---|---|---|
@@ -74,6 +74,7 @@ Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was wri
 | **Parasol**, a 90-file web app (ours, built before Svels) | 42 | 1: an unused icon | – | **41.** Kane passed with all 41 removed (a missing picture doesn't fail a text check), but the app builds paths into `demo/`, `products/`, `scenes/` at runtime, so Svels refused |
 | **[bradtraversy/50projects50days](https://github.com/bradtraversy/50projects50days)** (40k stars, 52 apps, 167 files) | **1** | 1: `event-keycodes/dark-style.css`, referenced nowhere. Kane pressed "a" and still saw key code 65 | – | – |
 | **[StartBootstrap Agency](https://github.com/StartBootstrap/startbootstrap-agency)** (built site, 25 files) | **0** | – | – | – |
+| **[AdminLTE v3](https://github.com/ColorlibHQ/AdminLTE/tree/v3)** (45k stars, 2,428 files, 70 pages) — the stress test | 1,724 | **1,724 files (603,861 lines, about 34 MB)** of plugin extras no page references: 536 flag images, 139 Moment.js locales, CodeMirror modes, Summernote and validation translations. All cut in **one trial**; Kane then walked the dashboard menu, a DataTables search, jQuery Validation and FullCalendar, and all four still worked | – | – |
 
 What the real runs taught Svels (each is now in the scanner): every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
 
