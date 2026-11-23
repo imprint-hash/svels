@@ -17,8 +17,9 @@ const SPEC_RE = [
   /\brequire\(\s*["']([^"']+)["']\s*\)/g,
   /@import\s+["']([^"']+)["']/g,
   /url\(\s*["']?([^"')]+)["']?\s*\)/g,
-  /\b(?:src|href|content|poster|data-src)=["']([^"'#?]+)["']/g,
-  /"(?:src|url|href|icon)"\s*:\s*"([^"#?]+)"/g, // manifest.json and other JSON configs
+  /\b(?:src|href|content|poster|data-src)=["']([^"'#?]+)[^"']*["']/g,
+  /\]\(\s*<?([^)\s>#?]+)[^)]*\)/g, // Markdown links and images: ![shot](screenshots/a.png)
+  /"(?:src|url|href|icon)"\s*:\s*"([^"#?]+)[^"]*"/g, // manifest.json and other JSON configs
   // A complete file path written as a plain string in code ("/demo/sam/face.jpg", 'products/a.webp').
   // Strings built at runtime (`/demo/${id}/face.jpg`) are left for Kane to settle in the browser.
   /["'`]((?:\.{0,2}\/)?[\w@~.-]+(?:\/[\w@~.-]+)*\.(?:png|jpe?g|webp|gif|svg|ico|css|m?js|json|woff2?|mp4|webm|mp3))["'`]/g,
@@ -43,6 +44,8 @@ function specifiers(text) {
 }
 
 function resolveFile(root, fromFile, spec, aliases) {
+  spec = spec.replace(/[?#].*$/, ""); // "app.min.js?v=2.1.0" and "icons.svg#home" name the same file
+  if (!spec) return null;
   let base;
   if (spec.startsWith(".")) base = path.join(path.dirname(path.join(root, fromFile)), spec);
   else if (spec.startsWith("/")) base = [path.join(root, "public", spec), path.join(root, spec)].find((p) => fs.existsSync(p)) || path.join(root, spec);
@@ -63,11 +66,13 @@ const pkgName = (spec) => (spec.startsWith("@") ? spec.split("/").slice(0, 2).jo
 export function buildGraph(root, opts = {}) {
   const { entries, aliases = { "@": "src" }, keep = [] } = opts;
   const files = listFiles(root);
-  const codeLike = (f) => [...CODE_EXT, ".css", ".scss", ".html", ".htm", ".json", ".webmanifest"].some((e) => f.endsWith(e));
+  const codeLike = (f) => [...CODE_EXT, ".css", ".scss", ".html", ".htm", ".json", ".webmanifest", ".md", ".markdown"].some((e) => f.toLowerCase().endsWith(e));
   const edges = {}, usedPkgs = {};
   // Every HTML page is a way into the site (people open /stats.html directly), so each one is an entry.
   const pages = opts.allPages === false ? [] : files.filter((f) => /\.html?$/i.test(f) && !keep.some((k) => f.startsWith(k.replace(/\/?$/, "/"))) && !/(^|\/)(output-[^/]+|\.testmuai|docs)\//.test(f));
-  const seen = new Set(), queue = [...new Set([...entries, ...pages])].filter((e) => fs.existsSync(path.join(root, e)));
+  // Markdown files (README, docs) show images on GitHub: anything they link to is in use, even though no web page loads it.
+  const markdown = files.filter((f) => /\.(md|markdown)$/i.test(f) && !/(^|\/)(output-[^/]+|\.testmuai|node_modules)\//.test(f));
+  const seen = new Set(), queue = [...new Set([...entries, ...pages, ...markdown])].filter((e) => fs.existsSync(path.join(root, e)));
   while (queue.length) {
     const f = queue.shift(); if (seen.has(f)) continue; seen.add(f);
     edges[f] = [];
@@ -100,7 +105,7 @@ export function buildGraph(root, opts = {}) {
   // Only files a browser could load count as candidates; docs, configs and build sources are left alone.
   const servable = /\.(m?js|cjs|jsx|tsx?|css|html?|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|otf|eot|json)$/i;
   const isConfig = (f) => path.posix.basename(f).startsWith(".") || /^(composer\.json|[\w.-]*\.config\.(m?js|cjs|json|ts)|tsconfig[\w.-]*\.json|jsconfig\.json)$/i.test(path.posix.basename(f)) || f.split("/").some((seg) => seg.startsWith(".") && seg.length > 1);
-  const notTooling = (f) => !isConfig(f) && !/(^|\/)(package(-lock)?\.json|svels\.config\.json|tsconfig[^/]*\.json|vercel\.json|manifest\.json|robots\.txt)$/i.test(f) && !/(^|\/)(output-[^/]+|\.testmuai|test|tests|__tests__|scripts|api|docs)\//.test(f);
+  const notTooling = (f) => !isConfig(f) && !/(^|\/)(package(-lock)?\.json|svels\.config\.json|tsconfig[^/]*\.json|vercel\.json|manifest\.json|robots\.txt|[gG]ulpfile\.[cm]?js|[gG]runtfile\.[cm]?js|webpack\.[\w.]*js)$/i.test(f) && !/(^|\/)(output-[^/]+|\.testmuai|test|tests|__tests__|scripts|api|docs)\//.test(f);
   const roots = (opts.roots || []).map((r) => r.replace(/\/?$/, "/"));
   const inRoots = (f) => !roots.length || roots.some((r) => f.startsWith(r));
   const unreachableFiles = files.filter((f) => !seen.has(f) && !isKept(f) && inRoots(f) && servable.test(f) && notTooling(f));

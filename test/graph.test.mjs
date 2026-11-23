@@ -81,3 +81,20 @@ test("keep list protects a folder", () => {
   const g = scan(project({ "index.html": "<p></p>", "vendor/lib.js": "1" }), { keep: ["vendor/"] });
   assert.deepEqual(g.unreachableFiles, []);
 });
+
+test("a version tag on a URL (app.js?v=2.1.0) still counts as use", () => {
+  const g = scan(project({ "index.html": '<script src="js/app.min.js?v=2.1.0"></script><link href="css/a.css#x" rel="stylesheet">', "js/app.min.js": "1", "css/a.css": "" }));
+  assert.ok(g.reachable.includes("js/app.min.js"));
+  assert.ok(g.reachable.includes("css/a.css"));
+});
+
+test("build scripts (gulpfile, Gruntfile, webpack config) are tooling, never candidates", () => {
+  const g = scan(project({ "index.html": "<p></p>", "gulpfile.js": "1", "gulpfile.mjs": "1", "Gruntfile.js": "1", "webpack.prod.js": "1" }));
+  assert.deepEqual(g.unreachableFiles, []);
+});
+
+test("images shown in a README count as use (deleting them breaks the GitHub page)", () => {
+  const g = scan(project({ "index.html": "<p></p>", "README.md": "# App\n![dashboard](screenshots/dash.png)\n[guide](docs-site/guide.html)", "screenshots/dash.png": "x", "screenshots/old.png": "x" }));
+  assert.ok(g.reachable.includes("screenshots/dash.png"));
+  assert.deepEqual(g.unreachableFiles.filter((f) => f.startsWith("screenshots/")), ["screenshots/old.png"]);
+});
