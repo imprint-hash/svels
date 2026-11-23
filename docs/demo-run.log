@@ -1,0 +1,60 @@
+Guarded folders (paths built at runtime): src/promos/, src/themes/
+Svels: 25 candidates (19 files, 6 packages) look unused to the import scan.
+Baseline: Kane walks 3 journeys on the untouched app.
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+Trial 1: without 21 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+Trial 2: without 25 item(s)
+  FAIL  browse (replayed from cache) at "Clicking Wildflower honey to open its page"  
+Trial 3: without 23 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  FAIL  checkout (replayed from cache) at "the page says the order is confirmed and that it charged $6.08 with WELCOME10"  
+Trial 4: without 22 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+Trial 5: without 23 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  retry  checkout: Kane triaged the failure as a test problem ("The replay could not complete because the recorded promo code is rejected, so it")
+  FAIL  checkout (replayed from cache) at "the page says the order is confirmed and that it charged $6.08 with WELCOME10"  
+Trial 6: without 24 item(s)
+  FAIL  browse (replayed from cache) at "Clicking Wildflower honey to open its page"  
+Trial 7: without 23 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+Trial 8: without 24 item(s)
+  FAIL  browse (replayed from cache) at "Clicking Wildflower honey to open its page"  
+Agent: 3 used file(s) still export things nothing imports.
+Agent edit src/lib/format.js (attempt 1, groq): removes badgeText, percent, formatDate, pluralize, truncate (11 lines)
+Trial 9: without 21 item(s)
+  FAIL  browse (replayed from cache) at "the header shows "Cart (1)""  
+  Kane rejected it: journey "browse" failed at "the header shows "Cart (1)"" (Kane's triage: Wildflower honey shows as added, but the header still displays an empty cart.). Sending that back to the agent.
+Agent edit src/lib/format.js (attempt 2, gemini): removes percent, formatDate, pluralize, truncate (10 lines)
+Trial 10: without 21 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+Agent edit src/components/Cart.js (attempt 1, groq): removes cartSummary (6 lines)
+Trial 11: without 21 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+Agent edit src/lib/products.js (attempt 1, groq): removes searchProducts, featured, sortByPrice (10 lines)
+Trial 12: without 21 item(s)
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+Final check: all 21 cuts and 3 agent edits together.
+  PASS  browse (replayed from cache)  
+  PASS  cart (replayed from cache)  
+  PASS  checkout (replayed from cache)  
+
+Removed 15 files (123 lines), trimmed 26 lines inside 3 used files, and dropped 6 packages. Kept 2 that Kane proved are needed.
+Final check: all journeys pass. Kane runs: 34 (34 replayed free). Report: /home/imprint/svels/examples/bloated-shop/.svels/report.html

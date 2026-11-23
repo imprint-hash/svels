@@ -2,6 +2,7 @@
 // svels: delete the code your app doesn't need. Kane CLI proves your user journeys still pass after every cut.
 import path from "node:path";
 import { scan, run } from "../src/run.mjs";
+import { demo } from "../src/demo.mjs";
 
 const [cmd = "help", ...rest] = process.argv.slice(2);
 const flag = (n) => rest.includes(n);
@@ -13,11 +14,14 @@ if (cmd === "scan") {
   console.log(`${graph.reachable.length} files reachable from the entry points.`);
   console.log(`${candidates.length} look unused (Svels will only cut what Kane proves is safe):`);
   for (const c of candidates) console.log("  " + c);
+} else if (cmd === "demo") {
+  await demo();
 } else if (cmd === "run") {
   await run(dir, { cdp: opt("--cdp"), apply: flag("--apply") });
 } else {
   console.log(`svels: cut the code your app doesn't need, with proof.
 
+  svels demo                          see it work in ~20 s (no Kane account needed)
   svels scan [dir]                    list files and packages that look unused
   svels run  [dir] [--apply] [--cdp <url>]
                                       Kane walks your journeys (svels/journeys/*_test.md), Svels cuts in

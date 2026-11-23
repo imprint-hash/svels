@@ -5,17 +5,18 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "demo": "node bin/svels.mjs run examples/bloated-shop",
-    "scan": "node bin/svels.mjs scan examples/bloated-shop"
+    "scan": "node bin/svels.mjs scan examples/bloated-shop",
+    "try": "node bin/svels.mjs demo"
   },
   "license": "MIT",
-  "dependencies": {
-    "@testmuai/kane-cli": "0.10.3"
-  },
   "type": "module",
   "bin": {
     "svels": "bin/svels.mjs"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@testmuai/kane-cli": "0.10.3"
   }
 }

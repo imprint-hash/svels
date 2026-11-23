@@ -7,7 +7,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 export function kaneBin(projectDir) {
-  const local = [path.join(projectDir, "node_modules/.bin/kane-cli"), path.join(process.cwd(), "node_modules/.bin/kane-cli")].find((p) => fs.existsSync(p));
+  const own = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../node_modules/.bin/kane-cli");
+  const local = [path.join(projectDir, "node_modules/.bin/kane-cli"), path.join(process.cwd(), "node_modules/.bin/kane-cli"), own].find((p) => fs.existsSync(p));
   return process.env.SVELS_KANE || local || "kane-cli";
 }
 
