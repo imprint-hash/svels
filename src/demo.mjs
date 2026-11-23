@@ -51,6 +51,7 @@ export async function demo() {
   for (const [name, line] of [
     ["AdminLTE (45k stars)", "1,724 unused files cut (34 MB); dashboard, DataTables, validation, calendar still pass"],
     ["SB Admin 2 (9.8k stars)", "1,659 unused files cut; dashboard menu and DataTables search still pass"],
+    ["Argon Dashboard", "75 unused files cut (26 MB); dashboard and tables still pass"],
     ["50projects50days (40k stars)", "found 1 dead stylesheet; Kane confirmed the app still works"],
   ]) await say(`   ${green("+")} ${bold(name)}: ${line}`, 250);
 
