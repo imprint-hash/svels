@@ -44,3 +44,21 @@ export async function recordLoads(endpoint, origin) {
 }
 
 export const relPathForUrlPath = (p, files) => files.find((f) => f === p) || files.find((f) => f === path.posix.join("public", p)) || p;
+
+// Give every Kane journey a clean start: one tab, already on the journey's own start page.
+// Kane replays in the tab it finds, so without this a journey could start on the page the
+// previous journey left behind (a "Dashboard" check running on the Tables page).
+export async function freshTab(endpoint, url) {
+  let pages = [];
+  try { pages = (await (await fetch(`${endpoint}/json/list`)).json()).filter((t) => t.type === "page"); } catch { return; }
+  for (const extra of pages.slice(1)) { try { await fetch(`${endpoint}/json/close/${extra.id}`); } catch {} }
+  const page = pages[0] || (await (await fetch(`${endpoint}/json/new?about:blank`, { method: "PUT" })).json());
+  await new Promise((resolve) => {
+    const ws = new WebSocket(page.webSocketDebuggerUrl);
+    const done = () => { try { ws.close(); } catch {} resolve(); };
+    const timer = setTimeout(done, 15000);
+    ws.onopen = () => { ws.send(JSON.stringify({ id: 1, method: "Page.enable" })); ws.send(JSON.stringify({ id: 2, method: "Page.navigate", params: { url } })); };
+    ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.method === "Page.loadEventFired") { clearTimeout(timer); setTimeout(done, 300); } };
+    ws.onerror = () => { clearTimeout(timer); done(); };
+  });
+}

@@ -6,7 +6,7 @@ import path from "node:path";
 import { buildGraph } from "./graph.mjs";
 import { shrink } from "./ddmin.mjs";
 import { startServer } from "./serve.mjs";
-import { launchChrome, recordLoads } from "./browser.mjs";
+import { launchChrome, recordLoads, freshTab } from "./browser.mjs";
 import { kaneBin, runJourney, listJourneys } from "./kane.mjs";
 import { freshCopy, applyRemovals, lineCount, byteSize } from "./workspace.mjs";
 import { explainNeeded } from "./agent.mjs";
@@ -50,11 +50,13 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
   const runAll = async (label, heal) => {
     const res = [];
     for (const j of journeys) {
+      const startUrl = (fs.readFileSync(j, "utf8").match(/^url:\s*(\S+)/m) || [])[1];
+      if (startUrl) await freshTab(chrome.endpoint, startUrl);
       rec.take();
       let r = await runJourney(bin, j, { cdp: chrome.endpoint, heal, logDir: path.join(svelsDir, "kane-logs") });
       if (!r.ok && r.automationBug) { // Kane says the test misfired, not the app: retry once before believing it
         log(`  retry  ${r.journey}: Kane triaged the failure as a test problem ("${(r.triage || "").slice(0, 80)}")`);
-        credits += r.credits; rec.take();
+        credits += r.credits; if (startUrl) await freshTab(chrome.endpoint, startUrl); rec.take();
         r = { ...(await runJourney(bin, j, { cdp: chrome.endpoint, heal, logDir: path.join(svelsDir, "kane-logs") })), retried: true };
       }
       r.loaded = rec.take(); r.label = label; credits += r.credits; runs.push(r); res.push(r);
