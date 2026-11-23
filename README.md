@@ -6,6 +6,8 @@ AI coding agents only ever *add* code. A few weeks in, every vibe-coded app is f
 
 Built for the **Kane CLI Online Hackathon** (TestMu AI, 12–19 Nov 2026).
 
+**Live report from a real run:** https://imprint-hash.github.io/svels/sample-report.html
+
 **In one minute:**
 - **Ships:** `svels run` works end to end on real code nobody wrote for it. On AdminLTE (45k stars, 2,428 files) it cut 1,724 unused files (about 34 MB) in one trial while Kane confirmed four real pages still work; on a 40k-star repo it found a dead stylesheet Kane confirmed. On our demo shop it cut 15 files, 6 packages and 26 lines inside used files; every journey still passes.
 - **Verified:** Kane CLI is the only judge of every cut. It caught 3 breaks a static dead-code scan would have shipped (a blank shop, a rejected promo code, a frozen cart badge), with Kane's own screenshots, triage and NDJSON in [`docs/evidence/`](docs/evidence/). On a real site of ours it caught a deletion that would have emptied a live dropdown.
@@ -66,7 +68,7 @@ npm run scan                      # what looks unused in the demo shop (no Kane,
 SVELS_CHROME=$(which google-chrome) GROQ_API_KEY=... npm run demo   # the full loop -> examples/bloated-shop/.svels/report.html
 ```
 
-Kane recordings belong to the account that made them, so on your account Svels has Kane learn the three demo journeys fresh on the first run (about 65 Kane credits, once); every trial after that replays from Kane's cache for free. The agent needs a free Groq or Gemini key. No time to run it? Open [`docs/sample-report.html`](docs/sample-report.html), the report from our run.
+Kane recordings belong to the account that made them, so on your account Svels has Kane learn the three demo journeys fresh on the first run (about 65 Kane credits, once); every trial after that replays from Kane's cache for free. The agent needs a free Groq or Gemini key. No time to run it? Open the **live report from our run: https://imprint-hash.github.io/svels/sample-report.html** (also in [`docs/sample-report.html`](docs/sample-report.html)).
 
 The demo shop (`examples/bloated-shop`) at a glance:
 
