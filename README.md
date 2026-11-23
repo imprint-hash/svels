@@ -6,7 +6,13 @@ AI coding agents only ever *add* code. A few weeks in, every vibe-coded app is f
 
 Built for the **Kane CLI Online Hackathon** (TestMu AI, 12–19 Nov 2026).
 
-**Live report from a real run:** https://imprint-hash.github.io/svels/sample-report.html
+**See it work in about 20 seconds, no account needed:**
+
+```bash
+npx -y github:imprint-hash/svels demo
+```
+
+(A live scan of the bundled demo shop, then a replay of a real Kane run; the raw Kane NDJSON is in [`docs/evidence/`](docs/evidence/).) **Live report from that run:** https://imprint-hash.github.io/svels/sample-report.html
 
 **In one minute:**
 - **Ships:** `svels run` works end to end on real code nobody wrote for it. On AdminLTE (45k stars, 2,428 files) it cut 1,724 unused files (about 34 MB) in one trial while Kane confirmed four real pages still work; on a 40k-star repo it found a dead stylesheet Kane confirmed. On our demo shop it cut 15 files, 6 packages and 26 lines inside used files; every journey still passes.
@@ -50,16 +56,20 @@ Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was wri
 | Code | Looked unused | Cut (Kane-verified) | Kept: Kane caught a break | Guarded, not cut |
 |---|---|---|---|---|
 | **[AdminLTE v3](https://github.com/ColorlibHQ/AdminLTE/tree/v3)** (45k stars, 2,428 files, 70 pages) — the stress test | 1,724 | **1,724 files (603,861 lines, about 34 MB)** of plugin extras no page references: 536 flag images, 139 Moment.js locales, CodeMirror modes, Summernote and validation translations. All cut in **one trial**; Kane then walked the dashboard menu, a DataTables search, jQuery Validation and FullCalendar, and all four still worked | – | – |
+| **[SB Admin 2](https://github.com/StartBootstrap/startbootstrap-sb-admin-2)** (9.8k stars, 1,878 files) | 1,659 | **1,659 files (123,821 lines)**, almost all of them Font Awesome's 1,646 spare icon files plus spare copies of jQuery, DataTables, Chart.js and Bootstrap. One trial; Kane then opened the sidebar's Components menu and searched the DataTables table ("Tiger"), and both still worked | – | – |
 | **[bradtraversy/50projects50days](https://github.com/bradtraversy/50projects50days)** (40k stars, 52 apps, 167 files) | **1** | 1: `event-keycodes/dark-style.css`, referenced nowhere. Kane pressed "a" and still saw key code 65 | – | – |
 | **[StartBootstrap Agency](https://github.com/StartBootstrap/startbootstrap-agency)** (built site, 25 files) | **0** | – | – | – |
 | **Aisle**, a live hackathon site (ours, built before Svels) | 3 (first scanner version; it now reads paths in JavaScript strings, so today it flags only 1) | 1: `img/kite.svg`, an image the site stopped using | **1: `data/campaign.json`.** The page fetches it by URL; without it Kane saw the task dropdown lose "Lagos, Nigeria" | – |
 | **Parasol**, a 90-file web app (ours, built before Svels) | 42 | 1: an unused icon | – | **41.** Kane passed with all 41 removed (a missing picture doesn't fail a text check), but the app builds paths into `demo/`, `products/`, `scenes/` at runtime, so Svels refused |
 
-What the real runs taught Svels (each is now in the scanner): every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
+What the real runs taught Svels (each is now in the scanner, with a test): a version tag on a URL (`argon-dashboard.min.js?v=2.1.0`) still names the file, build scripts (`gulpfile.js`) are tooling, images shown in a README count as used (deleting them breaks the project's GitHub page, which Kane can't see), every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
 
 ## Judges, start here
 
 ```bash
+npx -y github:imprint-hash/svels demo   # 20 seconds, nothing to install, no account
+
+# the full loop on your machine:
 git clone https://github.com/imprint-hash/svels && cd svels
 npm install                       # installs Kane CLI (@testmuai/kane-cli)
 npx kane-cli login                # your TestMu account
