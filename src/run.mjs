@@ -12,6 +12,10 @@ import { freshCopy, applyRemovals, lineCount, byteSize } from "./workspace.mjs";
 import { explainNeeded } from "./agent.mjs";
 import { writeReport } from "./report.mjs";
 import { unusedExports } from "./exports.mjs";
+import { fileURLToPath } from "node:url";
+
+// Kane's Notary job: the final check is judged by Kane against this evidence policy.
+export const DEFAULT_POLICY = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../policy/svels-safe-cut.policy.yaml");
 import { agentTrim } from "./trim.mjs";
 
 export function loadConfig(projectDir) {
@@ -47,19 +51,20 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
   const origin = `http://127.0.0.1:${cfg.port}`;
   const rec = await recordLoads(chrome.endpoint, origin);
   const runs = []; let credits = 0;
-  const runAll = async (label, heal) => {
+  const runAll = async (label, heal, policy = null) => {
     const res = [];
     for (const j of journeys) {
       const startUrl = (fs.readFileSync(j, "utf8").match(/^url:\s*(\S+)/m) || [])[1];
       if (startUrl) await freshTab(chrome.endpoint, startUrl);
       rec.take();
-      let r = await runJourney(bin, j, { cdp: chrome.endpoint, heal, logDir: path.join(svelsDir, "kane-logs") });
+      let r = await runJourney(bin, j, { cdp: chrome.endpoint, heal, policy, logDir: path.join(svelsDir, "kane-logs") });
       if (!r.ok && r.automationBug) { // Kane says the test misfired, not the app: retry once before believing it
         log(`  retry  ${r.journey}: Kane triaged the failure as a test problem ("${(r.triage || "").slice(0, 80)}")`);
         credits += r.credits; if (startUrl) await freshTab(chrome.endpoint, startUrl); rec.take();
-        r = { ...(await runJourney(bin, j, { cdp: chrome.endpoint, heal, logDir: path.join(svelsDir, "kane-logs") })), retried: true };
+        r = { ...(await runJourney(bin, j, { cdp: chrome.endpoint, heal, policy, logDir: path.join(svelsDir, "kane-logs") })), retried: true };
       }
       r.loaded = rec.take(); r.label = label; credits += r.credits; runs.push(r); res.push(r);
+      if (policy && r.ok && r.policyVerdict?.result !== "pass") { r.ok = false; r.failedStep = `Kane's evidence policy: ${r.policyVerdict ? r.policyVerdict.policies.flatMap((x) => x.failedGates).join(", ") || r.policyVerdict.result : "no verdict"}`; }
       log(`  ${r.ok ? "PASS" : "FAIL"}  ${r.journey}${r.replayed ? " (replayed from cache)" : ""}${r.failedStep ? ` at "${r.failedStep}"` : ""}  ${r.credits ? r.credits + " credits" : ""}`);
       if (!r.ok && !heal) break; // one failing journey is enough to reject a cut
     }
@@ -119,7 +124,13 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
     freshCopy(projectDir, work); applyRemovals(work, accepted); server.setRoot(work);
     for (const [f, c] of Object.entries(edits)) fs.writeFileSync(path.join(work, f), c);
     log(`Final check: all ${accepted.length} cuts and ${Object.keys(edits).length} agent edits together.`);
-    const final = await runAll("final", false);
+    const policy = cfg.policy ? path.resolve(projectDir, cfg.policy) : DEFAULT_POLICY;
+    const final = await runAll("final", false, policy);
+    // Keep Kane's verdict files with the report: the sealed proof that the cleanup was safe.
+    const vdir = path.join(svelsDir, "verdicts"); fs.mkdirSync(vdir, { recursive: true });
+    const notary = final.map((r) => ({ journey: r.journey, ...(r.policyVerdict || { result: "missing" }) }));
+    for (const n of notary) for (const p of n.policies || []) if (p.file && fs.existsSync(p.file)) fs.copyFileSync(p.file, path.join(vdir, `${n.journey}.${p.id}.verdict.json`));
+    if (notary.length) log(`Kane notary: ${notary.filter((n) => n.result === "pass").length}/${notary.length} sealed evidence packs pass the "${path.basename(policy).replace(/\.policy\.yaml$/, "")}" policy (${notary[0].policies?.[0]?.gates ?? "?"} gates each).`);
     const removedFiles = accepted.filter((x) => x.startsWith("file:")).map((x) => x.slice(5));
     const summary = {
       project: path.basename(projectDir), at: new Date().toISOString(), seconds: Math.round((Date.now() - t0) / 1000),
@@ -129,7 +140,7 @@ export async function run(projectDir, { cdp, apply = false, log = console.log } 
       linesRemoved: removedFiles.reduce((s, f) => s + lineCount(path.join(projectDir, f)), 0),
       bytesRemoved: removedFiles.reduce((s, f) => s + byteSize(path.join(projectDir, f)), 0),
       packagesRemoved: accepted.filter((x) => x.startsWith("pkg:")).map((x) => x.slice(4)),
-      finalPassed: final.every((r) => r.ok), journeys: base.map((r) => r.journey), journeyMap,
+      finalPassed: final.every((r) => r.ok), notary, policy: path.basename(policy), journeys: base.map((r) => r.journey), journeyMap,
       kaneRuns: runs.length, replays: runs.filter((r) => r.replayed).length, credits: Math.round(credits * 100) / 100,
       trials, runs: runs.map(({ journey, label, ok, failedStep, replayed, credits, evidence }) => ({ journey, label, ok, failedStep, replayed, credits, evidence })),
       allFiles: graph.files, reachable: graph.reachable, applied: false,

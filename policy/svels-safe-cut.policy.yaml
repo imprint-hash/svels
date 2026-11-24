@@ -1,0 +1,27 @@
+policy: svels-safe-cut
+gates:
+  - id: every-journey-passed
+    metric: pass_rate
+    min: 1
+    severity: blocking
+    message: Every user journey must pass after the cuts.
+  - id: no-skipped-steps
+    metric: steps.skipped
+    equals: 0
+    severity: blocking
+    message: A skipped step proves nothing; a cut is only safe if every step ran.
+  - id: every-test-has-checks
+    metric: metrics.tests_without_checks
+    equals: 0
+    severity: blocking
+    message: A journey with no checks would pass whatever was deleted.
+  - id: no-healing
+    metric: metrics.heal.healed_tests
+    equals: 0
+    severity: blocking
+    message: Kane must not re-learn a journey to make a cut pass.
+  - id: no-broken
+    metric: totals.broken
+    equals: 0
+    severity: blocking
+    message: Every journey's checks must be evaluable.

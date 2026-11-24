@@ -22,9 +22,10 @@ export async function runJourney(bin, file, opts) {
   return r;
 }
 
-function runJourneyOnce(bin, file, { cdp, heal = false, timeout = 300, logDir = null }) {
+function runJourneyOnce(bin, file, { cdp, heal = false, timeout = 300, logDir = null, policy = null }) {
   const args = ["testmd", "run", file, "--cdp-endpoint", cdp, "--agent", "--timeout", String(timeout)];
   if (!heal) args.push("--no-adaptive-heal");
+  if (policy) args.push("--policy", policy); // Kane judges the sealed evidence pack against Svels' rules
   return new Promise((resolve) => {
     const p = spawn(bin, args, { cwd: path.dirname(file), env: process.env });
     let out = "";
@@ -47,10 +48,14 @@ function runJourneyOnce(bin, file, { cdp, heal = false, timeout = 300, logDir = 
       // Kane triages its own failures: an "automation_bug" means the test/replay misfired, not the app.
       const verdict = lines.find((l) => l.type === "test_md_bug_verdict");
       const automationBug = !!verdict && verdict.family === "automation_bug";
+      // Kane's policy verdict on the sealed evidence pack (only when a policy was passed).
+      const pv = lines.find((l) => l.type === "verdict");
+      const policyVerdict = pv ? { result: pv.result, evidenceId: pv.evidence_id, policies: (pv.policies || []).map((x) => ({ id: x.id, sha256: x.sha256, result: x.result,
+        gates: x.counts?.total ?? null, failedGates: x.failed_gate_ids || [], file: x.file })) } : null;
       if (logDir) { fs.mkdirSync(logDir, { recursive: true }); fs.writeFileSync(path.join(logDir, `${Date.now()}-${stem}.ndjson`), out); }
       resolve({ journey: stem, ok: summary?.overall_status === "passed", status: summary?.overall_status || "error",
         steps: summary?.steps || null, replayed: summary?.steps?.replay_decisions || 0, credits: Math.round(credits * 1000) / 1000,
-        failedStep, automationBug, foreignRecording: /belongs to org/.test(out), triage: verdict?.one_liner || null, evidence, resultMd: fs.existsSync(resultMd) ? resultMd : null, raw: summary ? null : out.slice(-600) });
+        failedStep, automationBug, policyVerdict, foreignRecording: /belongs to org/.test(out), triage: verdict?.one_liner || null, evidence, resultMd: fs.existsSync(resultMd) ? resultMd : null, raw: summary ? null : out.slice(-600) });
     });
   });
 }
