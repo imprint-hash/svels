@@ -1,0 +1,97 @@
+{
+  "result": "pass",
+  "evaluated_at": "2026-11-24T15:06:41.636Z",
+  "evaluator": "evidence-cli 0.2.0",
+  "pack": {
+    "run_id": "52101dc3-6c84-4559-8865-d3079c6850a5",
+    "sha256": "a2265fa9f08c709312a8746dc6b3b619908bd4ff597f5e652af4dbe7edaf1a6a",
+    "contract": "0.1"
+  },
+  "policy": {
+    "id": "svels-safe-cut",
+    "sha256": "a8bcab354a54460b2f075af16ce49e51405134f7e5c8b880ac6e1d82206a2030"
+  },
+  "catalog": {
+    "id": "kane-cli",
+    "version": 1,
+    "sha256": "9774e11a8a2240448d765bd4ad8eb1cf6c0444937e72050588b597539c890e77",
+    "source": "bundled"
+  },
+  "error": null,
+  "gates": [
+    {
+      "id": "every-journey-passed",
+      "metric": "pass_rate",
+      "where": null,
+      "op": "min",
+      "expected": 1,
+      "severity": "blocking",
+      "message": "Every user journey must pass after the cuts.",
+      "actual": 1,
+      "status": "pass",
+      "trust": "recomputed",
+      "error": null,
+      "stored": null
+    },
+    {
+      "id": "no-skipped-steps",
+      "metric": "steps.skipped",
+      "where": null,
+      "op": "equals",
+      "expected": 0,
+      "severity": "blocking",
+      "message": "A skipped step proves nothing; a cut is only safe if every step ran.",
+      "actual": 0,
+      "status": "pass",
+      "trust": "recomputed",
+      "error": null,
+      "stored": null
+    },
+    {
+      "id": "every-test-has-checks",
+      "metric": "metrics.tests_without_checks",
+      "where": null,
+      "op": "equals",
+      "expected": 0,
+      "severity": "blocking",
+      "message": "A journey with no checks would pass whatever was deleted.",
+      "actual": 0,
+      "status": "pass",
+      "trust": "recomputed",
+      "error": null,
+      "stored": null
+    },
+    {
+      "id": "no-healing",
+      "metric": "metrics.heal.healed_tests",
+      "where": null,
+      "op": "equals",
+      "expected": 0,
+      "severity": "blocking",
+      "message": "Kane must not re-learn a journey to make a cut pass.",
+      "actual": 0,
+      "status": "pass",
+      "trust": "recomputed",
+      "error": null,
+      "stored": null
+    },
+    {
+      "id": "no-broken",
+      "metric": "totals.broken",
+      "where": null,
+      "op": "equals",
+      "expected": 0,
+      "severity": "blocking",
+      "message": "Every journey's checks must be evaluable.",
+      "actual": 0,
+      "status": "pass",
+      "trust": "recomputed",
+      "error": null,
+      "stored": null
+    }
+  ],
+  "failed_gates": [],
+  "warnings": [],
+  "errored_gates": [],
+  "exit_code": 0
+}

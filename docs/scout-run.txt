@@ -1,0 +1,43 @@
+Kane scouts http://127.0.0.1:5180/ like a new user (kane-cli run, real browser)...
+Kane's report: report user journeys: 1) Browse product—click Larder, click Rolled oats; result "Slow-cooked porridge oats from a small mill." 2) Add and review cart—click Rolled oats Add to cart, click Cart; result "Total: $4.50". 3) Checkout—click Go to checkout, enter Alex Morgan, alex.morgan@example.com, WELCOME10, click Place order; result "Order LD-93SJ0X confirmed. We charged $4.05 (WELCOME10, 10% off)."
+  KEEP  scout-browse-product: Kane authored it, 3 policy gates pass
+  KEEP  scout-add-and-review-cart: Kane authored it, 3 policy gates pass
+  KEEP  scout-checkout: Kane authored it, 3 policy gates pass
+
+Kane scouted 14 actions and verified 3 journey(s) in svels/journeys/ (150.26 credits). Next: svels run
+---
+mode: testing
+url: http://127.0.0.1:5180/
+---
+
+# Checkout
+
+## Open home page
+Navigate to http://127.0.0.1:5180/
+
+## Open product detail
+Click "Rolled oats" product link
+
+## Add item to cart
+Click "Add to cart" for rolled oats
+
+## Open cart
+Click "Cart (1)" in the top navigation
+
+## Proceed to checkout
+Click "Go to checkout"
+
+## Enter customer details
+Type "Alex Morgan" into "Full name"
+Type "alex.morgan@example.com" into "Email"
+
+## Apply promo code
+Type "WELCOME10" into "Promo code"
+
+## Place order
+Click "Place order"
+
+## Verify order confirmation
+Verify that the confirmation contains "We charged $4.05 (WELCOME10, 10% off)"
+
+[exited with code 0]

@@ -47,11 +47,19 @@ export async function demo() {
   await say(`   ${red("x")} delete src/promos/welcome10.js  -> Kane: "Recorded WELCOME10 promo code is no longer valid"`, 250);
   await say(`   ${red("x")} agent removes badgeText          -> Kane: "the header still displays an empty cart" -> agent tries again -> ${green("pass")}`, 600);
 
-  await say("\n" + bold("4. On real projects nobody wrote for Svels"), 300);
+  await say("\n" + bold("4. Kane's other two jobs") + dim("  (docs/scout/: a real run from an empty journeys folder)"), 300);
+  const sc = JSON.parse(fs.readFileSync(path.join(ROOT, "docs/scout/scout.json"), "utf8"));
+  await say(`   ${cyan("Scout")}   svels scout: Kane explored the shop (${sc.kaneActions.length} actions) and wrote ${sc.kept.length} journeys: ${sc.kept.map((k) => k.replace(/^scout-/, "")).join(", ")}`, 300);
+  await say(`           each kept only after Kane authored it and its evidence policy found real checks`, 250);
+  await say(`   ${cyan("Notary")}  final check judged by Kane's svels-safe-cut policy: ${green("3/3 sealed evidence packs pass all 5 gates")}`, 250);
+  await say(dim("           with only Kane's journeys, Svels cut the same 15 files + 6 packages and kept the same 2"), 500);
+
+  await say("\n" + bold("5. On real projects nobody wrote for Svels"), 300);
   for (const [name, line] of [
     ["AdminLTE (45k stars)", "1,724 unused files cut (34 MB); dashboard, DataTables, validation, calendar still pass"],
     ["SB Admin 2 (9.8k stars)", "1,659 unused files cut; dashboard menu and DataTables search still pass"],
     ["Argon Dashboard", "75 unused files cut (26 MB); dashboard and tables still pass"],
+    ["CoolAdmin", "14 unused files cut (1.6 MB); dashboard and customer table still pass"],
     ["50projects50days (40k stars)", "found 1 dead stylesheet; Kane confirmed the app still works"],
   ]) await say(`   ${green("+")} ${bold(name)}: ${line}`, 250);
 

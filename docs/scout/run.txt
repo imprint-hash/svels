@@ -1,0 +1,59 @@
+Guarded folders (paths built at runtime): src/promos/, src/themes/
+Svels: 25 candidates (19 files, 6 packages) look unused to the import scan.
+Baseline: Kane walks 3 journeys on the untouched app.
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Trial 1: without 21 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Trial 2: without 25 item(s)
+  FAIL  scout-add-and-review-cart (replayed from cache) at "Clicking Rolled oats product link"  
+Trial 3: without 23 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  retry  scout-checkout: Kane triaged the failure as a test problem ("The replay stayed on checkout because the WELCOME10 promo code was rejected, so ")
+  FAIL  scout-checkout (replayed from cache) at "the confirmation contains "We charged $4.05 (WELCOME10, 10% off)""  
+Trial 4: without 22 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Trial 5: without 23 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  retry  scout-checkout: Kane triaged the failure as a test problem ("The replay did not reach confirmation because the supplied WELCOME10 code was re")
+  FAIL  scout-checkout (replayed from cache) at "the confirmation contains "We charged $4.05 (WELCOME10, 10% off)""  
+Trial 6: without 24 item(s)
+  FAIL  scout-add-and-review-cart (replayed from cache) at "Clicking Rolled oats product link"  
+Trial 7: without 23 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Trial 8: without 24 item(s)
+  retry  scout-add-and-review-cart: Kane triaged the failure as a test problem ("The replay could not click “Rolled oats” because that product link was not prese")
+  FAIL  scout-add-and-review-cart (replayed from cache) at "Clicking Rolled oats product link"  
+Agent: 3 used file(s) still export things nothing imports.
+Agent edit src/lib/format.js (attempt 1, groq): removes badgeText, percent, formatDate, pluralize, truncate (11 lines)
+Trial 9: without 21 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Agent edit src/components/Cart.js (attempt 1, groq): removes cartSummary (6 lines)
+Trial 10: without 21 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Agent edit src/lib/products.js (attempt 1, groq): removes searchProducts, featured, sortByPrice (10 lines)
+Trial 11: without 21 item(s)
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Final check: all 21 cuts and 3 agent edits together.
+  PASS  scout-add-and-review-cart (replayed from cache)  
+  PASS  scout-browse-product (replayed from cache)  
+  PASS  scout-checkout (replayed from cache)  
+Kane notary: 3/3 sealed evidence packs pass the "svels-safe-cut" policy (5 gates each).
+
+Removed 15 files (123 lines), trimmed 27 lines inside 3 used files, and dropped 6 packages. Kept 2 that Kane proved are needed.
+Final check: all journeys pass. Kane runs: 33 (33 replayed free). Report: examples/scouted-shop/.svels/report.html

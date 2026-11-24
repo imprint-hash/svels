@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-24T14:17:52.373Z",
+  "url": "http://127.0.0.1:5180/",
+  "report": "wait: Waiting report user journeys: 1) Browse product\u2014click Larder, click Rolled oats; result \"Slow-cooked porridge oats from a small mill.\" 2) Add and review cart\u2014click Rolled oats Add to cart, click Cart; result \"Total: $4.50\". 3) Checkout\u2014click Go to checkout, enter Alex Morgan, alex.morgan@example.com, WELCOME10, click Place order; result \"Order LD-93SJ0X confirmed. We charged $4.05 (WELCOME10, 10% off).\"",
+  "kaneActions": [
+    "navigate: Navigate to http://127.0.0.1:5180/",
+    "click: Clicking Add to cart for rolled oats",
+    "click: Clicking Rolled oats product link in Pantry goods list",
+    "click: Clicking Cart (1) in the top navigation to open the cart page",
+    "click: Clicking Go to checkout in the cart to open the checkout page",
+    "wait: queued plan (4 steps): type \"Full name\"; type \"Email\"; type \"Promo code\"; click ",
+    "type: Type \"Alex Morgan\" into \"Full name\"",
+    "type: Type \"alex.morgan@example.com\" into \"Email\"",
+    "wait: queued plan (2 steps): type \"Promo code\"; click \"Place order\"",
+    "type: Type \"WELCOME10\" into \"Promo code\"",
+    "click: Clicking Place order button",
+    "wait: PRIMARY: confirm exploration of the Larder catalog, product detail, cart, checko",
+    "wait: PRIMARY: confirm the successfully submitted sample checkout order",
+    "wait: Waiting report user journeys: 1) Browse product\u2014click Larder, click Rolled oats; result \"Slow-cooked porridge oats from a small mill.\" 2) Add and review cart\u2014click Rolled oats Add to cart, click Cart; result \"Total: $4.50\". 3) Checkout\u2014click Go to checkout, enter Alex Morgan, alex.morgan@example.com, WELCOME10, click Place order; result \"Order LD-93SJ0X confirmed. We charged $4.05 (WELCOME10, 10% off).\""
+  ],
+  "kept": [
+    "scout-browse-product",
+    "scout-add-and-review-cart",
+    "scout-checkout"
+  ],
+  "rejected": [],
+  "credits": 150.26
+}

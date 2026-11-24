@@ -19,7 +19,20 @@ npx -y github:imprint-hash/svels demo
 - **Verified:** Kane CLI is the only judge of every cut. It caught 3 breaks a static dead-code scan would have shipped (a blank shop, a rejected promo code, a frozen cart badge), with Kane's own screenshots, triage and NDJSON in [`docs/evidence/`](docs/evidence/). On a real site of ours it caught a deletion that would have emptied a live dropdown.
 - **Closed loop:** the coding agent edits code, Kane replays the journeys, and a failure goes back to the agent with Kane's triage and where the code is still used. Real transcript: attempt 1 removed `badgeText`, Kane failed "the header shows Cart (1)", attempt 2 kept it and removed the 4 truly dead helpers, Kane passed. What Kane proves needed is remembered for the next run.
 - **Craft:** an agent that deletes code instead of adding it. Delta debugging keeps Kane runs small; Kane's cache makes re-runs free (34 of 34 runs replayed, 0 credits); files a green test can't vouch for (images, runtime-built paths) are never auto-deleted.
+- **Kane does three jobs:** it **scouts** the app and writes the journeys (`svels scout`), **judges** every cut, and **notarises** the final check with an evidence policy (5 gates, verdict files in the repo). See [Kane CLI has three jobs](#kane-cli-has-three-jobs-in-svels).
 - **Gave back to Kane:** our runs exposed a real Kane bug (a heading-only test step is never run, yet reported passed). Reported with a repro and NDJSON: [LambdaTest/kane-cli#250](https://github.com/LambdaTest/kane-cli/issues/250).
+
+## Kane CLI has three jobs in Svels
+
+| Job | Kane CLI feature | What it does |
+|---|---|---|
+| **1. Scout** (`svels scout`) | `kane-cli run` (agentic exploration) + `testmd run` authoring | Kane explores your app like a new user and reports its main journeys with the exact text that proves each worked. The agent turns the report into `*_test.md` drafts; **Kane authors each draft on the untouched app and a draft is kept only if it passes and Kane's evidence policy finds real checks and no skipped steps.** Your manual release checklist, written by Kane. |
+| **2. Judge** (`svels run`) | `testmd run` replay from cache, `--no-adaptive-heal`, `--agent` NDJSON, bug triage | After every batch of cuts Kane replays every journey in a real browser. A cut stands only if every journey passes; a failure (with Kane's triage) goes back to the coding agent. |
+| **3. Notary** (final check) | `--policy` evidence verdicts on sealed evidence packs | The final check is judged by Kane against [`policy/svels-safe-cut.policy.yaml`](policy/svels-safe-cut.policy.yaml): every journey passed, no skipped steps, every journey has checks, nothing healed, nothing broken. Kane's verdict files ship with the report. |
+
+**Tested from an empty journeys folder** (demo shop): Kane scouted 14 actions and wrote 3 journeys (browse, cart total, checkout with the WELCOME10 promo), all 3 verified by Kane's policy ([journeys and log](docs/scout/)). Then `svels run` used **only Kane's own journeys** and got the same result as our hand-written ones: **15 files, 6 packages and 27 lines cut; the 2 runtime-loaded files kept because Kane caught the breaks** (checkout: "the WELCOME10 code was rejected"; cart: the product list never rendered). **Notary: 3/3 sealed evidence packs pass all 5 gates** ([verdict files](docs/scout/), [report](https://imprint-hash.github.io/svels/scout-report.html)). 33 Kane runs, all replayed free from cache.
+
+In an earlier scout run Kane rejected a bad draft (a checkout journey that skipped adding an item, so the cart was empty); the drafting rule was fixed and the re-run kept all three. Scouted journeys never contain a heading-only step (the Kane bug we reported).
 
 ## The four criteria, with the evidence
 
@@ -96,6 +109,11 @@ The demo shop (`examples/bloated-shop`) at a glance:
 ## How it works
 
 ```
+svels scout (optional)
+  0. scout      Kane explores the app (kane-cli run) and reports its main journeys; the agent
+                drafts *_test.md files; Kane authors each one; kept only if Kane's
+                svels-real-journey policy passes (real checks, no skipped steps)
+
 svels run
   1. scan       import graph from your entry points -> files and packages nothing imports
   2. baseline   Kane walks your journeys (svels/journeys/*_test.md) on the untouched app;
@@ -108,7 +126,8 @@ svels run
                 Kane replays the journeys; a failure goes back to the agent with Kane's triage
                 and every place the removed names still appear; up to 3 attempts
   5. explain    each file Kane proved needed: the agent says why, and it is remembered
-  6. confirm    every accepted cut and edit applied together -> Kane walks every journey again
+  6. confirm    every accepted cut and edit applied together -> Kane walks every journey again,
+                and judges each sealed evidence pack against svels-safe-cut (5 policy gates)
   7. report     .svels/report.html: numbers, journey map, kept files with reasons, every trial
      --apply    writes the proven cuts to your project
 ```
@@ -133,7 +152,7 @@ Testing one file at a time would need one Kane run per candidate. Svels removes 
    ```json
    { "entries": ["index.html"], "aliases": { "@": "src" }, "port": 5180, "journeys": "svels/journeys", "keep": ["svels/"] }
    ```
-2. Write 1–3 journeys in `svels/journeys/` (see `examples/bloated-shop/svels/journeys/`), starting at `http://127.0.0.1:<port>/`.
+2. Run `svels scout` and Kane writes 3 verified journeys for you, or write 1–3 yourself in `svels/journeys/` (see `examples/bloated-shop/svels/journeys/`), starting at `http://127.0.0.1:<port>/`.
 3. `svels scan` to preview, `svels run` for a dry run with a report, `svels run --apply` to write the proven cuts.
 
 Environment: `SVELS_CHROME` (a Chrome binary), `GROQ_API_KEY` or `GEMINI_API_KEY` for the agent's explanations (both have free tiers; without a key Svels writes a plain fallback explanation).
