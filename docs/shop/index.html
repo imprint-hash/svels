@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Larder — pantry goods</title>
+  <link rel="stylesheet" href="./src/styles/app.css">
+</head>
+<body>
+  <header class="top"><a href="#/" class="logo">Larder</a><a href="#/cart" id="cart-link">Cart (0)</a></header>
+  <main id="app"></main>
+  <script type="module" src="./src/main.js"></script>
+  <script type="module">
+    // Header badge, added straight into the page by the agent.
+    import { badgeText } from "./src/lib/format.js";
+    import { cart } from "./src/lib/cart-store.js";
+    const link = document.getElementById("cart-link");
+    const paint = () => (link.textContent = badgeText(cart.count()));
+    cart.onChange(paint); paint();
+  </script>
+</body>
+</html>
