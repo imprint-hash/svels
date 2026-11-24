@@ -19,6 +19,7 @@ npx -y github:imprint-hash/svels demo
 - **Verified:** Kane CLI is the only judge of every cut. It caught 3 breaks a static dead-code scan would have shipped (a blank shop, a rejected promo code, a frozen cart badge), with Kane's own screenshots, triage and NDJSON in [`docs/evidence/`](docs/evidence/). On a real site of ours it caught a deletion that would have emptied a live dropdown.
 - **Closed loop:** the coding agent edits code, Kane replays the journeys, and a failure goes back to the agent with Kane's triage and where the code is still used. Real transcript: attempt 1 removed `badgeText`, Kane failed "the header shows Cart (1)", attempt 2 kept it and removed the 4 truly dead helpers, Kane passed. What Kane proves needed is remembered for the next run.
 - **Craft:** an agent that deletes code instead of adding it. Delta debugging keeps Kane runs small; Kane's cache makes re-runs free (34 of 34 runs replayed, 0 credits); files a green test can't vouch for (images, runtime-built paths) are never auto-deleted.
+- **Gave back to Kane:** our runs exposed a real Kane bug (a heading-only test step is never run, yet reported passed). Reported with a repro and NDJSON: [LambdaTest/kane-cli#250](https://github.com/LambdaTest/kane-cli/issues/250).
 
 ## The four criteria, with the evidence
 
