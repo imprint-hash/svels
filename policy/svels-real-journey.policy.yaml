@@ -1,0 +1,17 @@
+policy: svels-real-journey
+gates:
+  - id: journey-passed
+    metric: pass_rate
+    min: 1
+    severity: blocking
+    message: A scouted journey must pass on the untouched app before Svels trusts it.
+  - id: no-skipped-steps
+    metric: steps.skipped
+    equals: 0
+    severity: blocking
+    message: Every step of a scouted journey must run.
+  - id: has-checks
+    metric: metrics.tests_without_checks
+    equals: 0
+    severity: blocking
+    message: A journey with no checks would pass whatever was deleted.

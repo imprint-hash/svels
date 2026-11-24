@@ -3,6 +3,7 @@
 import path from "node:path";
 import { scan, run } from "../src/run.mjs";
 import { demo } from "../src/demo.mjs";
+import { scout } from "../src/scout.mjs";
 
 const [cmd = "help", ...rest] = process.argv.slice(2);
 const flag = (n) => rest.includes(n);
@@ -16,12 +17,16 @@ if (cmd === "scan") {
   for (const c of candidates) console.log("  " + c);
 } else if (cmd === "demo") {
   await demo();
+} else if (cmd === "scout") {
+  await scout(dir, { cdp: opt("--cdp") });
 } else if (cmd === "run") {
   await run(dir, { cdp: opt("--cdp"), apply: flag("--apply") });
 } else {
   console.log(`svels: cut the code your app doesn't need, with proof.
 
   svels demo                          see it work in ~20 s (no Kane account needed)
+  svels scout [dir] [--cdp <url>]     Kane explores your app and writes its main journeys; each is kept
+                                      only if Kane authors it and its evidence policy passes
   svels scan [dir]                    list files and packages that look unused
   svels run  [dir] [--apply] [--cdp <url>]
                                       Kane walks your journeys (svels/journeys/*_test.md), Svels cuts in
