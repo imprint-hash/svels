@@ -4,6 +4,10 @@ import path from "node:path";
 import { scan, run } from "../src/run.mjs";
 import { demo } from "../src/demo.mjs";
 import { scout } from "../src/scout.mjs";
+import { check } from "../src/check.mjs";
+import fs from "node:fs";
+import os from "node:os";
+import { fileURLToPath } from "node:url";
 
 const [cmd = "help", ...rest] = process.argv.slice(2);
 const flag = (n) => rest.includes(n);
@@ -19,6 +23,15 @@ if (cmd === "scan") {
   await demo();
 } else if (cmd === "scout") {
   await scout(dir, { cdp: opt("--cdp") });
+} else if (cmd === "check") {
+  const r = await check(dir, { cdp: opt("--cdp") });
+  process.exitCode = r.passed ? 0 : 1;
+} else if (cmd === "install-skill") {
+  // Adds the Svels skill to Claude Code (personal skills folder), so "clean up dead code" runs this workflow.
+  const src = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../skill/svels/SKILL.md");
+  const dest = path.join(os.homedir(), ".claude/skills/svels");
+  fs.mkdirSync(dest, { recursive: true }); fs.copyFileSync(src, path.join(dest, "SKILL.md"));
+  console.log(`Svels skill installed for Claude Code: ${path.join(dest, "SKILL.md")}\nIn Claude Code, ask: "clean up the dead code in this app".`);
 } else if (cmd === "run") {
   await run(dir, { cdp: opt("--cdp"), apply: flag("--apply") });
 } else {
@@ -27,6 +40,9 @@ if (cmd === "scan") {
   svels demo                          see it work in ~20 s (no Kane account needed)
   svels scout [dir] [--cdp <url>]     Kane explores your app and writes its main journeys; each is kept
                                       only if Kane authors it and its evidence policy passes
+  svels check [dir] [--cdp <url>]     Kane re-tests every journey on the project as it is now (after an
+                                      approved change); exit 0 only if every journey and verdict passes
+  svels install-skill                 add the Svels skill to Claude Code
   svels scan [dir]                    list files and packages that look unused
   svels run  [dir] [--apply] [--cdp <url>]
                                       Kane walks your journeys (svels/journeys/*_test.md), Svels cuts in

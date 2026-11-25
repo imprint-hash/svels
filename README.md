@@ -24,6 +24,21 @@ npx -y github:imprint-hash/svels demo
 - **Kane does three jobs:** it **scouts** the app and writes the journeys (`svels scout`), **judges** every cut, and **notarises** the final check with an evidence policy (5 gates, verdict files in the repo). See [Kane CLI has three jobs](#kane-cli-has-three-jobs-in-svels).
 - **Gave back to Kane:** our runs exposed a real Kane bug (a heading-only test step is never run, yet reported passed). Reported with a repro and NDJSON: [LambdaTest/kane-cli#250](https://github.com/LambdaTest/kane-cli/issues/250). **The Kane team confirmed it on 0.10.9 ("That's a false pass and it's on us") and is shipping a fix: testmd will refuse a step with no instruction.**
 
+## Use it from Claude Code
+
+```bash
+npx -y github:imprint-hash/svels install-skill
+```
+
+Then, in Claude Code, ask: **"clean up the dead code in this app"**. The [Svels skill](skill/svels/SKILL.md) runs the loop with Claude as the investigator and you as the approver:
+
+1. **Kane finds:** `svels scan`, `svels scout` if there are no journeys, then `svels run` (a dry run on a temporary copy).
+2. **Claude investigates:** for every cut Kane rejected, Claude reads Kane's evidence (failing step, Kane's own triage, the evidence pack), opens the file and whatever loads it, and explains why the app needs it. It proposes a keep rule or a safer edit as a diff.
+3. **You approve.** Nothing touches the project before that.
+4. **Kane re-checks, independently:** `svels check` walks every journey on the project as it now is and judges each sealed evidence pack with the `svels-safe-cut` policy. Exit 0 or the change is reverted.
+
+[A real run of this loop](docs/claude-code/transcript.md): a promo file deleted → Kane FAIL ("the checkout rejects WELCOME10") → Claude traces it to a runtime `import()` and proposes a keep rule → approved and restored → Kane PASS, exit 0.
+
 ## Kane CLI has three jobs in Svels
 
 | Job | Kane CLI feature | What it does |

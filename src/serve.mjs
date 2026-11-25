@@ -21,6 +21,6 @@ export function startServer(port) {
   });
   return new Promise((resolve) => server.listen(port, "127.0.0.1", () => resolve({
     setRoot: (dir) => { root = path.resolve(dir); },
-    close: () => new Promise((r) => server.close(r)),
+    close: () => new Promise((r) => { server.close(r); server.closeAllConnections?.(); }), // the browser keeps connections alive
   })));
 }
