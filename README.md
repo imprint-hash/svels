@@ -2,6 +2,8 @@
 
 **Delete the code your app doesn't need. Kane CLI proves your user journeys still pass after every cut, and a coding agent learns from every cut Kane rejects.**
 
+> **Every AI agent can add code. Svels is the agent that's only allowed to *delete* code, once Kane CLI proves your users won't notice.**
+
 AI coding agents only ever *add* code. A few weeks in, every vibe-coded app is full of old components, duplicate helpers, a v2 that was never wired in, and packages nobody imports. Nobody dares delete any of it, because code that *looks* unused can still be loaded at runtime. Svels deletes it for you, with proof: **nothing is removed unless Kane CLI walks your real user journeys in a real browser and they still pass.**
 
 Built for the **Kane CLI Online Hackathon** (TestMu AI, 12–19 Nov 2026).
