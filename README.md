@@ -20,7 +20,7 @@ npx -y github:imprint-hash/svels demo
 - **Closed loop:** the coding agent edits code, Kane replays the journeys, and a failure goes back to the agent with Kane's triage and where the code is still used. Real transcript: attempt 1 removed `badgeText`, Kane failed "the header shows Cart (1)", attempt 2 kept it and removed the 4 truly dead helpers, Kane passed. What Kane proves needed is remembered for the next run.
 - **Craft:** an agent that deletes code instead of adding it. Delta debugging keeps Kane runs small; Kane's cache makes re-runs free (34 of 34 runs replayed, 0 credits); files a green test can't vouch for (images, runtime-built paths) are never auto-deleted.
 - **Kane does three jobs:** it **scouts** the app and writes the journeys (`svels scout`), **judges** every cut, and **notarises** the final check with an evidence policy (5 gates, verdict files in the repo). See [Kane CLI has three jobs](#kane-cli-has-three-jobs-in-svels).
-- **Gave back to Kane:** our runs exposed a real Kane bug (a heading-only test step is never run, yet reported passed). Reported with a repro and NDJSON: [LambdaTest/kane-cli#250](https://github.com/LambdaTest/kane-cli/issues/250).
+- **Gave back to Kane:** our runs exposed a real Kane bug (a heading-only test step is never run, yet reported passed). Reported with a repro and NDJSON: [LambdaTest/kane-cli#250](https://github.com/LambdaTest/kane-cli/issues/250). **The Kane team confirmed it on 0.10.9 ("That's a false pass and it's on us") and is shipping a fix: testmd will refuse a step with no instruction.**
 
 ## Kane CLI has three jobs in Svels
 
