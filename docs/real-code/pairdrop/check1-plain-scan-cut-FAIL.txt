@@ -1,0 +1,6 @@
+Kane re-checks 3 journey(s) on pairdrop-naive as it is now (policy: svels-safe-cut.policy.yaml).
+  FAIL  about  verdict: fail
+  PASS  home  verdict: pass
+  FAIL  language at "Switch the app to German"  verdict: fail  (Kane's triage: The language menu did not become usable after the Set Language control was activated, so Deutsch could not be selected.)
+Kane failed the change. Evidence: .svels/check.json
+exit 1

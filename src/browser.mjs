@@ -57,8 +57,21 @@ export async function freshTab(endpoint, url) {
     const ws = new WebSocket(page.webSocketDebuggerUrl);
     const done = () => { try { ws.close(); } catch {} resolve(); };
     const timer = setTimeout(done, 15000);
-    ws.onopen = () => { ws.send(JSON.stringify({ id: 1, method: "Page.enable" })); ws.send(JSON.stringify({ id: 2, method: "Page.navigate", params: { url } })); };
-    ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.method === "Page.loadEventFired") { clearTimeout(timer); setTimeout(done, 300); } };
+    // Found on PairDrop: its service worker cached every file during the baseline, so later trials were
+    // served deleted files from that cache and Kane passed cuts that break the app. Each journey now
+    // starts with the site's offline cache, service worker, storage and HTTP cache wiped.
+    const origin = new URL(url).origin;
+    const send = (id, method, params = {}) => ws.send(JSON.stringify({ id, method, params }));
+    ws.onopen = () => {
+      send(1, "Page.enable"); send(2, "Network.enable");
+      send(3, "Storage.clearDataForOrigin", { origin, storageTypes: "service_workers,cache_storage,local_storage,indexeddb" });
+      send(4, "Network.clearBrowserCache");
+    };
+    ws.onmessage = (m) => {
+      const d = JSON.parse(m.data);
+      if (d.id === 4) send(5, "Page.navigate", { url }); // navigate only after the wipe is done
+      if (d.method === "Page.loadEventFired") { clearTimeout(timer); setTimeout(done, 300); }
+    };
     ws.onerror = () => { clearTimeout(timer); done(); };
   });
 }

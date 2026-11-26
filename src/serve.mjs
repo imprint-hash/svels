@@ -10,6 +10,7 @@ const MIME = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/jav
 export function startServer(port) {
   let root = null;
   const server = http.createServer((req, res) => {
+    if (!root) { res.writeHead(503, { "Cache-Control": "no-store" }); return res.end("not ready"); } // a request can arrive before the first trial is set up
     const url = decodeURIComponent(new URL(req.url, "http://x").pathname);
     const rel = url === "/" ? "/index.html" : url;
     const candidates = [path.join(root, rel), path.join(root, "public", rel)];

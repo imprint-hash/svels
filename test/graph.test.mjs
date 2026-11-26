@@ -62,6 +62,18 @@ test("folders the code builds paths into at runtime are guarded", () => {
   assert.ok(g.dynamicDirs.includes("demo/"));
 });
 
+// Found on PairDrop (11.9k stars): scripts/main.js loads "styles/styles-deferred.css" and
+// scripts/localization.js fetches `lang/${locale}.json`. The browser resolves both from the page.
+test("paths inside a script resolve from the page, not the script's folder", () => {
+  const g = scan(project({
+    "index.html": '<script src="scripts/main.js"></script>',
+    "scripts/main.js": 'load(["styles/deferred.css"]); const r = await fetch(`lang/${locale}.json`);',
+    "styles/deferred.css": "", "lang/de.json": "{}",
+  }));
+  assert.ok(g.reachable.includes("styles/deferred.css"));
+  assert.ok(g.dynamicDirs.includes("lang/"));
+});
+
 test("HTML inside a template literal is not mistaken for a runtime folder", () => {
   const g = scan(project({ "index.html": '<script src="/a.js"></script>', "a.js": "el.innerHTML = `<h1>Your cart</h1><p>${n} items</p>`;" }));
   assert.deepEqual(g.dynamicDirs, []);

@@ -1,0 +1,22 @@
+Guarded folders (paths built at runtime): scripts/lang/
+Svels: 80 candidates (80 files, 0 packages) look unused to the import scan.
+Baseline: Kane walks 3 journeys on the untouched app.
+  PASS  about  19.929 credits
+  PASS  home  14.042 credits
+  PASS  language  38.807 credits
+Trial 1: without 78 item(s)
+  PASS  about (replayed from cache)  
+  PASS  home (replayed from cache)  
+  PASS  language (replayed from cache)  
+Trial 2: without 80 item(s)
+  PASS  about (replayed from cache)  
+  PASS  home (replayed from cache)  
+  PASS  language (replayed from cache)  
+Final check: all 78 cuts and 0 agent edits together.
+  PASS  about (replayed from cache)  
+  PASS  home (replayed from cache)  
+  PASS  language (replayed from cache)  
+Kane notary: 3/3 sealed evidence packs pass the "svels-safe-cut" policy (5 gates each).
+
+Removed 78 files (49969 lines), trimmed 0 lines inside 0 used files, and dropped 0 packages. Kept 0 that Kane proved are needed.
+Final check: all journeys pass. Kane runs: 12 (9 replayed free). Report: /home/imprint/svels-trials/pairdrop/.svels/report.html

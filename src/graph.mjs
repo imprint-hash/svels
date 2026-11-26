@@ -51,6 +51,9 @@ function resolveFile(root, fromFile, spec, aliases) {
   else if (spec.startsWith("/")) base = [path.join(root, "public", spec), path.join(root, spec)].find((p) => fs.existsSync(p)) || path.join(root, spec);
   else if (!spec.startsWith("@") && /\.[a-z0-9]{2,5}$/i.test(spec) && fs.existsSync(path.join(path.dirname(path.join(root, fromFile)), spec))) {
     base = path.join(path.dirname(path.join(root, fromFile)), spec); // plain relative path in HTML/CSS ("assets/img/a.png")
+  } else if (isScript(fromFile) && !spec.startsWith("@") && /\.[a-z0-9]{2,5}$/i.test(spec) && pageDirs(root).some((d) => fs.existsSync(path.join(d, spec)))) {
+    // In a browser a path inside a script ("styles/x.css", fetch("lang/de.json")) is resolved from the page, not the script's folder.
+    base = path.join(pageDirs(root).find((d) => fs.existsSync(path.join(d, spec))), spec);
   } else {
     const alias = Object.keys(aliases).find((a) => spec === a || spec.startsWith(a + "/"));
     if (!alias) return null;
@@ -60,6 +63,9 @@ function resolveFile(root, fromFile, spec, aliases) {
   const hit = tries.find((p) => fs.existsSync(p) && fs.statSync(p).isFile());
   return hit ? path.relative(root, hit).split(path.sep).join("/") : null;
 }
+
+const isScript = (f) => /\.(m?js|cjs|jsx|tsx?)$/i.test(f);
+const pageDirs = (root) => [root, path.join(root, "public")].filter((d) => fs.existsSync(d));
 
 const pkgName = (spec) => (spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0]);
 
@@ -96,6 +102,8 @@ export function buildGraph(root, opts = {}) {
       const abs = dirPart.startsWith("/") ? path.join(root, dirPart) : path.join(path.dirname(path.join(root, f)), dirPart);
       const rel = path.relative(root, abs).split(path.sep).join("/");
       if (!rel.startsWith("..") && rel) dynamicDirs.add(rel.replace(/\/?$/, "/"));
+      // A script's runtime path is resolved from the page: `lang/${code}.json` in scripts/i18n.js means /lang/.
+      if (isScript(f) && !dirPart.startsWith(".") && !dirPart.startsWith("/")) for (const d of pageDirs(root)) if (fs.existsSync(path.join(d, dirPart))) dynamicDirs.add(path.relative(root, path.join(d, dirPart)).split(path.sep).join("/").replace(/\/?$/, "/"));
       if (dirPart.startsWith("/") && fs.existsSync(path.join(root, "public", dirPart))) dynamicDirs.add(("public" + dirPart).replace(/\/?$/, "/"));
     }
   }

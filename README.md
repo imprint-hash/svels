@@ -16,6 +16,16 @@ npx -y github:imprint-hash/svels demo
 
 (A live scan of the bundled demo shop, then a replay of a real Kane run; the raw Kane NDJSON is in [`docs/evidence/`](docs/evidence/).) **Live report from that run:** https://imprint-hash.github.io/svels/sample-report.html
 
+### Proof on code we didn't write: PairDrop (11.9k stars)
+
+PairDrop loads its translations and a stylesheet by paths built at runtime, and caches everything in a service worker: exactly the dead-looking code that matters. [Full write-up with raw Kane output](docs/real-code/pairdrop/).
+
+| Step | What happened |
+|---|---|
+| **Fail** | A plain import scan calls **80 files** dead, including 37 of PairDrop's 38 translations and a deferred stylesheet. Deleted in a copy, then `svels check`: **Kane FAIL, exit 1**. Kane's triage: *"The language menu did not become usable after the Set Language control was activated, so Deutsch could not be selected."* |
+| **Fix** | PairDrop also exposed two real Svels bugs: its service worker served deleted files from cache (so our first run wrongly *passed* 78 cuts), and paths inside scripts were read from the script's folder instead of the page. Both fixed, with tests. |
+| **Clean pass** | `svels run` now guards `lang/` and cuts **40 truly unused files (5.9 MB)**: 37 spare font files and 3 unreferenced logos. Kane walks all 3 journeys on the cut app: **PASS, exit 0**, 3 of 3 evidence packs pass the 5-gate policy. |
+
 **In one minute:**
 - **Ships:** `svels run` works end to end on real code nobody wrote for it. On AdminLTE (45k stars, 2,428 files) it cut 1,724 unused files (about 34 MB) in one trial while Kane confirmed four real pages still work; on a 40k-star repo it found a dead stylesheet Kane confirmed. On our demo shop it cut 15 files, 6 packages and 26 lines inside used files; every journey still passes.
 - **Verified:** Kane CLI is the only judge of every cut. It caught 3 breaks a static dead-code scan would have shipped (a blank shop, a rejected promo code, a frozen cart badge), with Kane's own screenshots, triage and NDJSON in [`docs/evidence/`](docs/evidence/). On a real site of ours it caught a deletion that would have emptied a live dropdown.
@@ -86,6 +96,7 @@ Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was wri
 
 | Code | Looked unused | Cut (Kane-verified) | Kept: Kane caught a break | Guarded, not cut |
 |---|---|---|---|---|
+| **[PairDrop](https://github.com/schlagmichdoch/PairDrop)** (11.9k stars, runtime-loaded translations, service worker) — [the fail → fix → pass](docs/real-code/pairdrop/) | 44 (a plain import scan: 80) | **40 files (5.9 MB)**: 37 spare Open Sans font files and 3 unreferenced logos. Kane walked About, the home screen and a switch to German and back; all pass | **The plain scan's cut: Kane FAIL** ("Deutsch could not be selected"): the "dead" translations and dialog stylesheet are loaded at runtime | **4** translations PairDrop never offers (`bn`, `fi`, `kab`, `th`), in a folder built into paths at runtime |
 | **[AdminLTE v3](https://github.com/ColorlibHQ/AdminLTE/tree/v3)** (45k stars, 2,428 files, 70 pages) — the stress test | 1,724 | **1,724 files (603,861 lines, about 34 MB)** of plugin extras no page references: 536 flag images, 139 Moment.js locales, CodeMirror modes, Summernote and validation translations. All cut in **one trial**; Kane then walked the dashboard menu, a DataTables search, jQuery Validation and FullCalendar, and all four still worked | – | – |
 | **[SB Admin 2](https://github.com/StartBootstrap/startbootstrap-sb-admin-2)** (9.8k stars, 1,878 files) | 1,659 | **1,659 files (123,821 lines)**, almost all of them Font Awesome's 1,646 spare icon files plus spare copies of jQuery, DataTables, Chart.js and Bootstrap. One trial; Kane then opened the sidebar's Components menu and searched the DataTables table ("Tiger"), and both still worked | – | – |
 | **[Argon Dashboard](https://github.com/creativetimofficial/argon-dashboard)** (718 stars, 314 files) | 75 | **75 files (97,044 lines, 26 MB)**: unused demo images, fonts and spare copies of its own CSS and JS. One trial; Kane checked the dashboard figures and the authors table; both still pass, all 6 Kane runs replayed from cache | – | – |
@@ -95,7 +106,7 @@ Every row is a real Svels run with Kane CLI driving Chrome. Nothing here was wri
 | **Aisle**, a live hackathon site (ours, built before Svels) | 3 (first scanner version; it now reads paths in JavaScript strings, so today it flags only 1) | 1: `img/kite.svg`, an image the site stopped using | **1: `data/campaign.json`.** The page fetches it by URL; without it Kane saw the task dropdown lose "Lagos, Nigeria" | – |
 | **Parasol**, a 90-file web app (ours, built before Svels) | 42 | 1: an unused icon | – | **41.** Kane passed with all 41 removed (a missing picture doesn't fail a text check), but the app builds paths into `demo/`, `products/`, `scenes/` at runtime, so Svels refused |
 
-What the real runs taught Svels (each is now in Svels, with a test): every Kane journey starts in a clean tab on its own start page (a replay otherwise begins wherever the last journey left the browser), a version tag on a URL (`argon-dashboard.min.js?v=2.1.0`) still names the file, build scripts (`gulpfile.js`) are tooling, images shown in a README count as used (deleting them breaks the project's GitHub page, which Kane can't see), every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
+What the real runs taught Svels (each is now in Svels, with a test): every Kane journey starts with the site's service worker and caches wiped (on PairDrop a service worker served deleted files and faked a pass), a path inside a script is resolved from the page like a browser does, every Kane journey starts in a clean tab on its own start page (a replay otherwise begins wherever the last journey left the browser), a version tag on a URL (`argon-dashboard.min.js?v=2.1.0`) still names the file, build scripts (`gulpfile.js`) are tooling, images shown in a README count as used (deleting them breaks the project's GitHub page, which Kane can't see), every HTML page is an entry point, `srcset` and `<meta content>` count as use, file paths written as strings in JavaScript count as use, and **folders the code builds paths into at runtime are guarded**: Kane can prove a file is needed, but never that it's safe to delete.
 
 ## Judges, start here
 
@@ -106,7 +117,7 @@ npx -y github:imprint-hash/svels demo   # 20 seconds, nothing to install, no acc
 git clone https://github.com/imprint-hash/svels && cd svels
 npm install                       # installs Kane CLI (@testmuai/kane-cli)
 npx kane-cli login                # your TestMu account
-npm test                          # 33 tests: scanner, Kane NDJSON parsing on real captured output, safety rules, agent loop
+npm test                          # 39 tests: scanner, Kane NDJSON parsing on real captured output, safety rules, agent loop
 npm run scan                      # what looks unused in the demo shop (no Kane, instant)
 SVELS_CHROME=$(which google-chrome) GROQ_API_KEY=... npm run demo   # the full loop -> examples/bloated-shop/.svels/report.html
 ```

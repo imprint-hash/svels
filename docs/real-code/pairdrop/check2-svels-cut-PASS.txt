@@ -1,0 +1,6 @@
+Kane re-checks 3 journey(s) on pairdrop-svels as it is now (policy: svels-safe-cut.policy.yaml).
+  PASS  about  verdict: pass
+  PASS  home  verdict: pass
+  PASS  language  verdict: pass
+All journeys pass and Kane's verdicts pass. The change is safe to keep.
+exit 0
